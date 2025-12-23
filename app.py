@@ -5,7 +5,9 @@ import gspread
 from google.oauth2.service_account import Credentials
 from io import BytesIO
 from jinja2 import Template
-from weasyprint import HTML
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+
 
 # ---------------- CONFIG ----------------
 LINES = {
@@ -123,13 +125,53 @@ html = Template(html_template).render(
 st.markdown(html, unsafe_allow_html=True)
 
 # -------- PDF --------
-pdf_bytes = HTML(string=html).write_pdf()
-st.download_button(
-    "Download PDF",
-    data=pdf_bytes,
-    file_name=f"{customer}_statement.pdf",
-    mime="application/pdf"
-)
+from reportlab.lib.units import cm
+
+def generate_pdf(customer, today, total_due, rows):
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+
+    y = height - 2 * cm
+
+    c.setFont("Helvetica-Bold", 14)
+    c.drawCentredString(width / 2, y, "Outstanding Invoice Statement")
+    y -= 1 * cm
+
+    c.setFont("Helvetica", 10)
+    c.drawString(2 * cm, y, f"Customer Name: {customer}")
+    y -= 0.6 * cm
+    c.drawString(2 * cm, y, f"As on Date: {today}")
+    y -= 1 * cm
+
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(2 * cm, y, f"Total Outstanding Amount: AED {total_due:,.2f}")
+    y -= 1 * cm
+
+    # Table header
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(2 * cm, y, "S.No")
+    c.drawString(3.5 * cm, y, "Invoice Date")
+    c.drawString(7 * cm, y, "Invoice No")
+    c.drawString(13 * cm, y, "Amount")
+    y -= 0.4 * cm
+
+    c.setFont("Helvetica", 9)
+    for i, r in enumerate(rows, start=1):
+        if y < 2 * cm:
+            c.showPage()
+            y = height - 2 * cm
+
+        c.drawString(2 * cm, y, str(i))
+        c.drawString(3.5 * cm, y, r["date"])
+        c.drawString(7 * cm, y, r["inv"])
+        c.drawRightString(18 * cm, y, r["amt"])
+        y -= 0.35 * cm
+
+    c.save()
+    buffer.seek(0)
+    return buffer
+
 
 # -------- EXCEL --------
 excel_df = df_cust[["Invoice Date", "Invoice Number", "Due Amount"]]
@@ -145,6 +187,16 @@ st.download_button(
     file_name=f"{customer}_statement.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
+
+pdf_buffer = generate_pdf(customer, today, total_due, rows)
+
+st.download_button(
+    "Download PDF",
+    data=pdf_buffer,
+    file_name=f"{customer}_statement.pdf",
+    mime="application/pdf"
+)
+
 
 # -------- WHATSAPP --------
 msg = f"Customer Statement – {customer}%0AOutstanding as on {today}: AED {total_due:,.2f}"

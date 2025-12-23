@@ -4,4 +4,4 @@ gspread
 google-auth
 openpyxl
 jinja2
-weasyprint
+reportlab
