@@ -9,7 +9,7 @@ from weasyprint import HTML
 
 # ---------------- CONFIG ----------------
 LINES = {
-    "Al Ain": "GOOGLE_SHEET_ID_110-fOy3E-ni7XBtbC6zI-ivVrom481ZAZiS4xau0Ikpg",
+    "Al Ain": "10-fOy3E-ni7XBtbC6zI-ivVrom481ZAZiS4xau0Ikpg",
 }
 
 INVOICE_SHEET_NAME = "Invoice Wise"
