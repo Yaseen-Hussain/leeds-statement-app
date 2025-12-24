@@ -4,7 +4,6 @@ import datetime
 import gspread
 from google.oauth2.service_account import Credentials
 from io import BytesIO
-from jinja2 import Template
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
@@ -39,22 +38,33 @@ creds = Credentials.from_service_account_info(
 )
 client = gspread.authorize(creds)
 
+@st.cache_data(ttl=300)
+def load_invoice_data(sheet_id, worksheet_name):
+    sheet = client.open_by_key(sheet_id)
+    ws = sheet.worksheet(worksheet_name)
+    data = ws.get_all_records()
+    df = pd.DataFrame(data)
+    df["Due Amount"] = pd.to_numeric(df["Due Amount"], errors="coerce")
+    return df
+
+
 # -------- UI --------
 st.image("logo.png", width=200)
 st.markdown("<h2 style='text-align:center'>Statement</h2>", unsafe_allow_html=True)
 
 line = st.selectbox("Select Line", list(LINES.keys()))
 
-sheet = client.open_by_key(LINES[line])
-ws = sheet.worksheet(INVOICE_SHEET_NAME)
-data = ws.get_all_records()
-
-df = pd.DataFrame(data)
-df["Due Amount"] = pd.to_numeric(df["Due Amount"], errors="coerce")
+df = load_invoice_data(LINES[line], INVOICE_SHEET_NAME)
 df = df[df["Due Amount"] > 0]
+
 
 customers = sorted(df["Customer Name"].unique())
 customer = st.selectbox("Customer Name", customers)
+
+if df_cust.empty:
+    st.warning("No outstanding invoices for this customer.")
+    st.stop()
+
 
 df_cust = df[df["Customer Name"] == customer].copy()
 df_cust["Invoice Date"] = pd.to_datetime(df_cust["Invoice Date"])
@@ -161,6 +171,14 @@ def generate_pdf(customer, today, total_due, rows):
         if y < 2 * cm:
             c.showPage()
             y = height - 2 * cm
+            c.setFont("Helvetica-Bold", 9)
+            c.drawString(2 * cm, y, "S.No")
+            c.drawString(3.5 * cm, y, "Invoice Date")
+            c.drawString(7 * cm, y, "Invoice No")
+            c.drawString(13 * cm, y, "Amount")
+            y -= 0.4 * cm
+            c.setFont("Helvetica", 9)
+
 
         c.drawString(2 * cm, y, str(i))
         c.drawString(3.5 * cm, y, r["date"])
