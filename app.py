@@ -65,6 +65,12 @@ def load_invoice_data(sheet_id, worksheet_name):
     df = pd.DataFrame(rows, columns=headers)
 
     # Clean up numeric column
+    df["Due Amount"] = (
+        df["Due Amount"]
+        .astype(str)
+        .str.replace(",", "", regex=False)
+    )
+
     df["Due Amount"] = pd.to_numeric(df["Due Amount"], errors="coerce")
 
     return df
