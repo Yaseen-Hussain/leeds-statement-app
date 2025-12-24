@@ -14,7 +14,7 @@ from reportlab.pdfgen import canvas
 from io import BytesIO
 import os
 from pathlib import Path
-
+from PIL import Image
 
 
 
@@ -183,11 +183,17 @@ def generate_pdf(customer, today, total_due, rows):
     y = height - 2 * cm
 
     # ---------- LOGO ----------
-    BASE_DIR = Path(__file__).resolve().parent
-    logo_path = BASE_DIR / "logo.png"
+    try:
+        BASE_DIR = Path(__file__).resolve().parent
+        logo_path = BASE_DIR / "logo.png"
 
-    if logo_path.exists():
-        logo = ImageReader(str(logo_path))
+        with Image.open(logo_path) as img:
+            img_buffer = BytesIO()
+            img.save(img_buffer, format="PNG")
+            img_buffer.seek(0)
+
+        logo = ImageReader(img_buffer)
+
         c.drawImage(
             logo,
             (width - 4 * cm) / 2,
@@ -197,6 +203,12 @@ def generate_pdf(customer, today, total_due, rows):
             mask="auto"
         )
         y -= 2.5 * cm
+
+    except Exception as e:
+        # Optional debug during testing
+        # c.drawString(2*cm, y, f"Logo error: {e}")
+        pass
+
 
 
     # ---------- TITLE ----------
