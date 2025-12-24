@@ -174,7 +174,7 @@ from reportlab.pdfgen import canvas
 from io import BytesIO
 import os
 
-
+st.write("Logo exists:", (Path(__file__).resolve().parent / "logo.png").exists())
 def generate_pdf(customer, today, total_due, rows):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
