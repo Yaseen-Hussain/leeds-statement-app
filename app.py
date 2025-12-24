@@ -88,7 +88,14 @@ df = df[df["Due Amount"] > 0]
 
 
 customers = sorted(df["Customer Name"].unique())
-customer = st.selectbox("Customer Name", customers)
+
+customer = st.selectbox(
+    "Customer Name",
+    options=customers,
+    index=None,
+    placeholder="Type customer name"
+)
+
 
 df_cust = df[df["Customer Name"] == customer].copy()
 
