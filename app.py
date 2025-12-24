@@ -223,7 +223,6 @@ def generate_pdf(customer, today, total_due, rows):
         fontName="Helvetica-Bold"
     )
 
-    story.append(Paragraph("LEEDS GIFTS TRADING", title_style))
     story.append(Paragraph("Outstanding Invoice Statement", title_style))
     story.append(Spacer(1, 0.8*cm))
 
