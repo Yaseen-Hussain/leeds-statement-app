@@ -180,6 +180,7 @@ from reportlab.lib.utils import ImageReader
 from io import BytesIO
 from pathlib import Path
 from PIL import Image
+from reportlab.platypus import Image
 
 
 def generate_pdf(customer, today, total_due, rows):
@@ -199,22 +200,18 @@ def generate_pdf(customer, today, total_due, rows):
 
     # ---------- LOGO ----------
     logo_path = Path(__file__).resolve().parent / "logo.png"
-    if logo_path.exists():
-        with Image.open(logo_path) as img:
-            img_buffer = BytesIO()
-            img.save(img_buffer, format="PNG")
-            img_buffer.seek(0)
 
-        story.append(
-            Table(
-                [[ImageReader(img_buffer)]],
-                colWidths=[4*cm],
-                style=[
-                    ("ALIGN", (0, 0), (-1, -1), "CENTER")
-                ]
-            )
+    if logo_path.exists():
+        logo = Image(
+            str(logo_path),
+            width=4*cm,
+            height=2*cm
         )
+        logo.hAlign = "CENTER"
+
+        story.append(logo)
         story.append(Spacer(1, 0.6*cm))
+
 
     # ---------- TITLES ----------
     title_style = ParagraphStyle(
