@@ -96,6 +96,11 @@ customer = st.selectbox(
     placeholder="Type customer name"
 )
 
+if customer is None:
+    st.info("Please select a customer to view the statement.")
+    st.stop()
+
+
 
 df_cust = df[df["Customer Name"] == customer].copy()
 
