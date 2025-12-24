@@ -165,70 +165,82 @@ html = Template(html_template).render(
 st.markdown(html, unsafe_allow_html=True)
 
 # -------- PDF --------
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    Table,
+    TableStyle
+)
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
-from reportlab.platypus import Table, TableStyle
 from reportlab.lib import colors
 from reportlab.lib.utils import ImageReader
-from reportlab.pdfgen import canvas
 from io import BytesIO
-import os
+from pathlib import Path
+from PIL import Image
+
 
 def generate_pdf(customer, today, total_due, rows):
     buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
-    width, height = A4
 
-    y = height - 2 * cm
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=2*cm,
+        leftMargin=2*cm,
+        topMargin=2*cm,
+        bottomMargin=2*cm
+    )
 
-    # ---------- LOGO (SAFE POSITIONING) ----------
-    BASE_DIR = Path(__file__).resolve().parent
-    logo_path = BASE_DIR / "logo.png"
+    styles = getSampleStyleSheet()
+    story = []
 
+    # ---------- LOGO ----------
+    logo_path = Path(__file__).resolve().parent / "logo.png"
     if logo_path.exists():
         with Image.open(logo_path) as img:
             img_buffer = BytesIO()
             img.save(img_buffer, format="PNG")
             img_buffer.seek(0)
 
-        logo = ImageReader(img_buffer)
-
-        LOGO_WIDTH = 4 * cm
-        LOGO_HEIGHT = 2 * cm
-
-        c.drawImage(
-            logo,
-            (width - LOGO_WIDTH) / 2,
-            height - LOGO_HEIGHT - 1.5 * cm,  # ABSOLUTE position
-            width=LOGO_WIDTH,
-            height=LOGO_HEIGHT,
-            preserveAspectRatio=True,
-            mask="auto"
+        story.append(
+            Table(
+                [[ImageReader(img_buffer)]],
+                colWidths=[4*cm],
+                style=[
+                    ("ALIGN", (0, 0), (-1, -1), "CENTER")
+                ]
+            )
         )
+        story.append(Spacer(1, 0.6*cm))
 
-    # Reset y BELOW logo safely
-    y = height - LOGO_HEIGHT - 2.3 * cm
+    # ---------- TITLES ----------
+    title_style = ParagraphStyle(
+        "Title",
+        parent=styles["Normal"],
+        fontSize=14,
+        leading=18,
+        alignment=1,
+        fontName="Helvetica-Bold"
+    )
 
-
-
-    # ---------- TITLE ----------
-    c.setFont("Helvetica-Bold", 14)
-    c.drawCentredString(width / 2, y, "LEEDS GIFTS TRADING")
-    y -= 1 * cm    
-    c.setFont("Helvetica-Bold", 14)
-    c.drawCentredString(width / 2, y, "Outstanding Invoice Statement")
-    y -= 1 * cm
+    story.append(Paragraph("LEEDS GIFTS TRADING", title_style))
+    story.append(Paragraph("Outstanding Invoice Statement", title_style))
+    story.append(Spacer(1, 0.8*cm))
 
     # ---------- META ----------
-    c.setFont("Helvetica", 10)
-    c.drawString(2 * cm, y, f"Customer Name: {customer}")
-    y -= 0.6 * cm
-    c.drawString(2 * cm, y, f"As on Date: {today}")
-    y -= 1 * cm
-
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(2 * cm, y, f"Total Outstanding Amount: AED {total_due:,.2f}")
-    y -= 1 * cm
+    story.append(Paragraph(f"<b>Customer Name:</b> {customer}", styles["Normal"]))
+    story.append(Paragraph(f"<b>As on Date:</b> {today}", styles["Normal"]))
+    story.append(Spacer(1, 0.4*cm))
+    story.append(
+        Paragraph(
+            f"<b>Total Outstanding Amount:</b> AED {total_due:,.2f}",
+            styles["Normal"]
+        )
+    )
+    story.append(Spacer(1, 0.8*cm))
 
     # ---------- TABLE DATA ----------
     table_data = [
@@ -243,11 +255,10 @@ def generate_pdf(customer, today, total_due, rows):
             f"{float(r['amt']):,.2f}"
         ])
 
-    # ---------- TABLE ----------
     table = Table(
         table_data,
         colWidths=[2*cm, 4*cm, 6.5*cm, 4.5*cm],
-        repeatRows=1  # header repeats on every page
+        repeatRows=1
     )
 
     table.setStyle(TableStyle([
@@ -255,36 +266,29 @@ def generate_pdf(customer, today, total_due, rows):
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
         ("ALIGN", (0, 0), (-1, 0), "CENTER"),
         ("ALIGN", (-1, 1), (-1, -1), "RIGHT"),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
         ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
         ("FONTSIZE", (0, 0), (-1, -1), 9),
         ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
         ("TOPPADDING", (0, 0), (-1, 0), 8),
-        ("LEFTPADDING", (0, 0), (-1, -1), 6),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
     ]))
 
-    table.wrapOn(c, width, height)
-    table_height = table._height
-
-    # ---------- PAGE BREAK SAFE DRAW ----------
-    if y - table_height < 2 * cm:
-        c.showPage()
-        y = height - 2 * cm
-
-    table.drawOn(c, 2 * cm, y - table_height)
+    story.append(table)
 
     # ---------- FOOTER ----------
-    c.setFont("Helvetica", 8)
-    c.drawCentredString(
-        width / 2,
-        1.5 * cm,
-        "This is a system-generated statement and does not require a signature."
+    story.append(Spacer(1, 0.8*cm))
+    footer = Paragraph(
+        "This is a system-generated statement and does not require a signature.",
+        ParagraphStyle(
+            "Footer",
+            fontSize=8,
+            alignment=1
+        )
     )
+    story.append(footer)
 
-    c.save()
+    doc.build(story)
     buffer.seek(0)
     return buffer
 
