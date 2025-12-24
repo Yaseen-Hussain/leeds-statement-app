@@ -182,11 +182,11 @@ def generate_pdf(customer, today, total_due, rows):
 
     y = height - 2 * cm
 
-    # ---------- LOGO ----------
-    try:
-        BASE_DIR = Path(__file__).resolve().parent
-        logo_path = BASE_DIR / "logo.png"
+    # ---------- LOGO (SAFE POSITIONING) ----------
+    BASE_DIR = Path(__file__).resolve().parent
+    logo_path = BASE_DIR / "logo.png"
 
+    if logo_path.exists():
         with Image.open(logo_path) as img:
             img_buffer = BytesIO()
             img.save(img_buffer, format="PNG")
@@ -194,20 +194,21 @@ def generate_pdf(customer, today, total_due, rows):
 
         logo = ImageReader(img_buffer)
 
+        LOGO_WIDTH = 4 * cm
+        LOGO_HEIGHT = 2 * cm
+
         c.drawImage(
             logo,
-            (width - 4 * cm) / 2,
-            y - 2 * cm,
-            width=4 * cm,
+            (width - LOGO_WIDTH) / 2,
+            height - LOGO_HEIGHT - 1.5 * cm,  # ABSOLUTE position
+            width=LOGO_WIDTH,
+            height=LOGO_HEIGHT,
             preserveAspectRatio=True,
             mask="auto"
         )
-        y -= 2.5 * cm
 
-    except Exception as e:
-        # Optional debug during testing
-        # c.drawString(2*cm, y, f"Logo error: {e}")
-        pass
+    # Reset y BELOW logo safely
+    y = height - LOGO_HEIGHT - 3.5 * cm
 
 
 
