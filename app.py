@@ -73,17 +73,18 @@ df = df[df["Due Amount"] > 0]
 customers = sorted(df["Customer Name"].unique())
 customer = st.selectbox("Customer Name", customers)
 
+df_cust = df[df["Customer Name"] == customer].copy()
+
 if df_cust.empty:
     st.warning("No outstanding invoices for this customer.")
     st.stop()
 
-
-df_cust = df[df["Customer Name"] == customer].copy()
-df_cust["Invoice Date"] = pd.to_datetime(df_cust["Invoice Date"])
+df_cust["Invoice Date"] = pd.to_datetime(df_cust["Invoice Date"], errors="coerce")
 df_cust = df_cust.sort_values("Invoice Date")
 
 total_due = df_cust["Due Amount"].sum()
 today = datetime.date.today().strftime("%d-%b-%Y")
+
 
 # -------- HTML TEMPLATE --------
 html_template = """
