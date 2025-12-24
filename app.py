@@ -174,7 +174,6 @@ from reportlab.pdfgen import canvas
 from io import BytesIO
 import os
 
-st.write("Logo exists:", (Path(__file__).resolve().parent / "logo.png").exists())
 def generate_pdf(customer, today, total_due, rows):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
@@ -208,7 +207,7 @@ def generate_pdf(customer, today, total_due, rows):
         )
 
     # Reset y BELOW logo safely
-    y = height - LOGO_HEIGHT - 3.5 * cm
+    y = height - LOGO_HEIGHT - 2.3 * cm
 
 
 
