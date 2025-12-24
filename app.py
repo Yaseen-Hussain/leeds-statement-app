@@ -38,7 +38,7 @@ creds = Credentials.from_service_account_info(
 )
 client = gspread.authorize(creds)
 
-@st.cache_data(ttl=300)
+# @st.cache_data(ttl=300)
 def load_invoice_data(sheet_id, worksheet_name):
     sheet = client.open_by_key(sheet_id)
     ws = sheet.worksheet(worksheet_name)
