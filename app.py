@@ -225,7 +225,7 @@ def generate_pdf(customer, today, total_due, rows):
     # ---------- TABLE ----------
     table = Table(
         table_data,
-        colWidths=[2*cm, 4*cm, 7*cm, 4,5*cm],
+        colWidths=[2*cm, 4*cm, 6.5*cm, 4,5*cm],
         repeatRows=1  # header repeats on every page
     )
 
@@ -276,6 +276,15 @@ output = BytesIO()
 with pd.ExcelWriter(output, engine="openpyxl") as writer:
     excel_df.to_excel(writer, index=False, sheet_name="Statement")
 
+pdf_buffer = generate_pdf(customer, today, total_due, rows)
+
+st.download_button(
+    "Download PDF",
+    data=pdf_buffer,
+    file_name=f"{customer}_leeds_statement.pdf",
+    mime="application/pdf"
+)
+
 st.download_button(
     "Download Excel",
     data=output.getvalue(),
@@ -283,19 +292,3 @@ st.download_button(
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
 
-pdf_buffer = generate_pdf(customer, today, total_due, rows)
-
-st.download_button(
-    "Download PDF",
-    data=pdf_buffer,
-    file_name=f"{customer}_statement.pdf",
-    mime="application/pdf"
-)
-
-
-# -------- WHATSAPP --------
-msg = f"Customer Statement – {customer}%0AOutstanding as on {today}: AED {total_due:,.2f}"
-st.markdown(
-    f"[Share via WhatsApp](https://wa.me/?text={msg})",
-    unsafe_allow_html=True
-)
