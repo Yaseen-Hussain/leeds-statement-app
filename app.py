@@ -202,6 +202,8 @@ def generate_pdf(customer, today, total_due, rows):
     # ---------- TITLE ----------
     c.setFont("Helvetica-Bold", 14)
     c.drawCentredString(width / 2, y, "LEEDS GIFTS TRADING")
+    y -= 1 * cm    
+    c.setFont("Helvetica-Bold", 14)
     c.drawCentredString(width / 2, y, "Outstanding Invoice Statement")
     y -= 1 * cm
 
