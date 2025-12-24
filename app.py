@@ -4,9 +4,16 @@ import datetime
 import gspread
 from google.oauth2.service_account import Credentials
 from io import BytesIO
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
 from jinja2 import Template
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm
+from reportlab.platypus import Table, TableStyle
+from reportlab.lib import colors
+from reportlab.lib.utils import ImageReader
+from reportlab.pdfgen import canvas
+from io import BytesIO
+import os
+
 
 
 
@@ -150,7 +157,15 @@ html = Template(html_template).render(
 st.markdown(html, unsafe_allow_html=True)
 
 # -------- PDF --------
+from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
+from reportlab.platypus import Table, TableStyle
+from reportlab.lib import colors
+from reportlab.lib.utils import ImageReader
+from reportlab.pdfgen import canvas
+from io import BytesIO
+import os
+
 
 def generate_pdf(customer, today, total_due, rows):
     buffer = BytesIO()
@@ -159,10 +174,26 @@ def generate_pdf(customer, today, total_due, rows):
 
     y = height - 2 * cm
 
+    # ---------- LOGO ----------
+    logo_path = "logo.png"
+    if os.path.exists(logo_path):
+        logo = ImageReader(logo_path)
+        c.drawImage(
+            logo,
+            (width - 4 * cm) / 2,
+            y - 2 * cm,
+            width=4 * cm,
+            preserveAspectRatio=True,
+            mask="auto"
+        )
+        y -= 2.5 * cm
+
+    # ---------- TITLE ----------
     c.setFont("Helvetica-Bold", 14)
     c.drawCentredString(width / 2, y, "Outstanding Invoice Statement")
     y -= 1 * cm
 
+    # ---------- META ----------
     c.setFont("Helvetica", 10)
     c.drawString(2 * cm, y, f"Customer Name: {customer}")
     y -= 0.6 * cm
@@ -173,33 +204,59 @@ def generate_pdf(customer, today, total_due, rows):
     c.drawString(2 * cm, y, f"Total Outstanding Amount: AED {total_due:,.2f}")
     y -= 1 * cm
 
-    # Table header
-    c.setFont("Helvetica-Bold", 9)
-    c.drawString(2 * cm, y, "S.No")
-    c.drawString(3.5 * cm, y, "Invoice Date")
-    c.drawString(7 * cm, y, "Invoice No")
-    c.drawString(13 * cm, y, "Amount")
-    y -= 0.4 * cm
+    # ---------- TABLE DATA ----------
+    table_data = [
+        ["S. No.", "Invoice Date", "Invoice No.", "Amount"]
+    ]
 
-    c.setFont("Helvetica", 9)
     for i, r in enumerate(rows, start=1):
-        if y < 2 * cm:
-            c.showPage()
-            y = height - 2 * cm
-            c.setFont("Helvetica-Bold", 9)
-            c.drawString(2 * cm, y, "S.No")
-            c.drawString(3.5 * cm, y, "Invoice Date")
-            c.drawString(7 * cm, y, "Invoice No")
-            c.drawString(13 * cm, y, "Amount")
-            y -= 0.4 * cm
-            c.setFont("Helvetica", 9)
+        table_data.append([
+            str(i),
+            r["date"],
+            r["inv"],
+            r["amt"]
+        ])
 
+    # ---------- TABLE ----------
+    table = Table(
+        table_data,
+        colWidths=[2*cm, 4*cm, 7*cm, 4*cm],
+        repeatRows=1  # header repeats on every page
+    )
 
-        c.drawString(2 * cm, y, str(i))
-        c.drawString(3.5 * cm, y, r["date"])
-        c.drawString(7 * cm, y, r["inv"])
-        c.drawRightString(18 * cm, y, r["amt"])
-        y -= 0.35 * cm
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1f2a5a")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("ALIGN", (0, 0), (-1, 0), "CENTER"),
+        ("ALIGN", (-1, 1), (-1, -1), "RIGHT"),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
+        ("FONTSIZE", (0, 0), (-1, -1), 9),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+        ("TOPPADDING", (0, 0), (-1, 0), 8),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+    ]))
+
+    table.wrapOn(c, width, height)
+    table_height = table._height
+
+    # ---------- PAGE BREAK SAFE DRAW ----------
+    if y - table_height < 2 * cm:
+        c.showPage()
+        y = height - 2 * cm
+
+    table.drawOn(c, 2 * cm, y - table_height)
+
+    # ---------- FOOTER ----------
+    c.setFont("Helvetica", 8)
+    c.drawCentredString(
+        width / 2,
+        1.5 * cm,
+        "This is a system-generated statement and does not require a signature."
+    )
 
     c.save()
     buffer.seek(0)
