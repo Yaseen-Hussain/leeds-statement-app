@@ -42,10 +42,22 @@ client = gspread.authorize(creds)
 def load_invoice_data(sheet_id, worksheet_name):
     sheet = client.open_by_key(sheet_id)
     ws = sheet.worksheet(worksheet_name)
-    data = ws.get_all_records()
-    df = pd.DataFrame(data)
+
+    values = ws.get_all_values()
+
+    if len(values) < 3:
+        return pd.DataFrame()
+
+    headers = values[1]   # Row 2 = headers
+    rows = values[2:]     # Row 3 onwards = data
+
+    df = pd.DataFrame(rows, columns=headers)
+
+    # Clean up numeric column
     df["Due Amount"] = pd.to_numeric(df["Due Amount"], errors="coerce")
+
     return df
+
 
 
 # -------- UI --------
