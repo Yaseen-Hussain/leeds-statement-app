@@ -13,6 +13,8 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 from io import BytesIO
 import os
+from pathlib import Path
+
 
 
 
@@ -144,7 +146,7 @@ for _, r in df_cust.iterrows():
     rows.append({
         "date": r["Invoice Date"].strftime("%d-%b-%Y"),
         "inv": r["Invoice Number"],
-        "amt": f"{r['Due Amount']:,.2f}"
+        "amt": r["Due Amount"]
     })
 
 html = Template(html_template).render(
@@ -175,9 +177,11 @@ def generate_pdf(customer, today, total_due, rows):
     y = height - 2 * cm
 
     # ---------- LOGO ----------
-    logo_path = "logo.png"
-    if os.path.exists(logo_path):
-        logo = ImageReader(logo_path)
+    BASE_DIR = Path(__file__).resolve().parent
+    logo_path = BASE_DIR / "logo.png"
+
+    if logo_path.exists():
+        logo = ImageReader(str(logo_path))
         c.drawImage(
             logo,
             (width - 4 * cm) / 2,
@@ -187,6 +191,7 @@ def generate_pdf(customer, today, total_due, rows):
             mask="auto"
         )
         y -= 2.5 * cm
+
 
     # ---------- TITLE ----------
     c.setFont("Helvetica-Bold", 14)
