@@ -20,6 +20,9 @@ INVOICE_SHEET_NAME = "Invoice Wise"
 st.set_page_config(page_title="Customer Statement", layout="centered")
 
 # -------- PASSWORD GATE --------
+st.write("Using service account:")
+st.write(st.secrets["google"]["client_email"])
+st.stop()
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
