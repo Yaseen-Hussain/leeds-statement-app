@@ -225,7 +225,7 @@ def generate_pdf(customer, today, total_due, rows):
     # ---------- TABLE ----------
     table = Table(
         table_data,
-        colWidths=[2*cm, 4*cm, 6.5*cm, 4,5*cm],
+        colWidths=[2*cm, 4*cm, 6.5*cm, 4.5*cm],
         repeatRows=1  # header repeats on every page
     )
 
