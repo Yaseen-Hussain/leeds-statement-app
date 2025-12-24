@@ -219,13 +219,13 @@ def generate_pdf(customer, today, total_due, rows):
             str(i),
             r["date"],
             r["inv"],
-            r["amt"]
+            f"{float(r['amt']):,.2f}"
         ])
 
     # ---------- TABLE ----------
     table = Table(
         table_data,
-        colWidths=[2*cm, 4*cm, 7*cm, 4*cm],
+        colWidths=[2*cm, 4*cm, 7*cm, 4,5*cm],
         repeatRows=1  # header repeats on every page
     )
 
