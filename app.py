@@ -22,6 +22,7 @@ from PIL import Image
 # ---------------- CONFIG ----------------
 LINES = {
     "Al Ain": "10-fOy3E-ni7XBtbC6zI-ivVrom481ZAZiS4xau0Ikpg",
+    "Dubai": "1WmMFkyaqRhp2eAqx5m9LFgk6hM-HLNVfXjwhdh4TPa8"
 }
 
 INVOICE_SHEET_NAME = "Invoice Wise"
