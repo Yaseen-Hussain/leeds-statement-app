@@ -54,7 +54,7 @@ def load_invoice_data(sheet_id, worksheet_name):
     sheet = client.open_by_key(sheet_id)
     ws = sheet.worksheet(worksheet_name)
 
-    values = ws.get_all_values()
+    values = ws.get_all_values(value_render_option="UNFORMATTED_VALUE")
 
     if len(values) < 3:
         return pd.DataFrame()
