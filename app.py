@@ -108,7 +108,12 @@ if df_cust.empty:
     st.warning("No outstanding invoices for this customer.")
     st.stop()
 
-df_cust["Invoice Date"] = pd.to_datetime(df_cust["Invoice Date"], errors="coerce")
+df_cust["Invoice Date"] = pd.to_datetime(
+    df_cust["Invoice Date"],
+    unit="D",
+    origin="1899-12-30",
+    errors="coerce"
+)
 df_cust = df_cust.sort_values("Invoice Date")
 
 total_due = df_cust["Due Amount"].sum()
