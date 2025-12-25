@@ -113,6 +113,7 @@ df_cust["Invoice Date"] = pd.to_datetime(
     origin="1899-12-30",
     errors="coerce"
 )
+
 df_cust = df_cust.sort_values("Invoice Date")
 
 total_due = df_cust["Due Amount"].sum()
@@ -168,7 +169,7 @@ for _, r in df_cust.iterrows():
     rows.append({
         "date": r["Invoice Date"].strftime("%d-%b-%Y"),
         "inv": r["Invoice Number"],
-        "amt": f"{r['Due Amount']:.2f}"   # 👈 EXACT 2 decimal
+        "amt": f"{r['Due Amount']:,.2f}"   # 👈 EXACT 2 decimal
     })
 
 html = Template(html_template).render(
