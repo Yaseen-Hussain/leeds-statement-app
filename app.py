@@ -72,8 +72,6 @@ def load_invoice_data(sheet_id, worksheet_name):
         .astype(float)
     )
 
-    df["Due Amount"] = pd.to_numeric(df["Due Amount"], errors="coerce")
-
     return df
 
 
