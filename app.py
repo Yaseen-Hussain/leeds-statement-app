@@ -69,6 +69,7 @@ def load_invoice_data(sheet_id, worksheet_name):
         df["Due Amount"]
         .astype(str)
         .str.replace(",", "", regex=False)
+        .astype(float)
     )
 
     df["Due Amount"] = pd.to_numeric(df["Due Amount"], errors="coerce")
@@ -164,7 +165,7 @@ for _, r in df_cust.iterrows():
     rows.append({
         "date": r["Invoice Date"].strftime("%d-%b-%Y"),
         "inv": r["Invoice Number"],
-        "amt": r["Due Amount"]
+        "amt": f"{r['Due Amount']:.2f}"   # 👈 EXACT 2 decimal
     })
 
 html = Template(html_template).render(
