@@ -261,7 +261,7 @@ def generate_pdf(customer, today, total_due, rows):
             str(i),
             r["date"],
             r["inv"],
-            f"{float(r['amt']):,.2f}"
+            r["amt"]
         ])
 
     table = Table(
