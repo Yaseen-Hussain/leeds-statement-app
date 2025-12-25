@@ -314,14 +314,14 @@ pdf_buffer = generate_pdf(customer, today, total_due, rows)
 st.download_button(
     "Download PDF",
     data=pdf_buffer,
-    file_name=f"{customer}_Leeds_Statement_{today}.pdf",
+    file_name=f"{customer}_Leedsgifts_Statement_{today}.pdf",
     mime="application/pdf"
 )
 
 st.download_button(
     "Download Excel",
     data=output.getvalue(),
-    file_name=f"{customer}_Leeds_Statement_{today}.xlsx",
+    file_name=f"{customer}_Leedsgifts_Statement_{today}.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
 
