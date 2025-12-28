@@ -273,9 +273,9 @@ def generate_pdf(customer, today, total_due, rows):
         ])
     # ---- TOTAL ROW ----
     table_data.append([
-        "",
-        "",
         "Total",
+        "",
+        "",
         f"{total_due:,.2f}"
     ])
 
