@@ -139,7 +139,7 @@ th { background-color: #1f2a5a; color: white; }
 <p><b>Customer Name:</b> {{ customer }}</p>
 
 <div class="summary">
-Total Outstanding Amount: AED {{ total }}
+Total outstanding amount: AED {{ total }}
 </div>
 
 <table>
@@ -155,9 +155,13 @@ Total Outstanding Amount: AED {{ total }}
 <td>{{ loop.index }}</td>
 <td>{{ row.date }}</td>
 <td>{{ row.inv }}</td>
-<td>{{ row.amt }}</td>
+<td style="text-align:right;">{{ row.amt }}</td>
 </tr>
 {% endfor %}
+<tr style="font-weight:bold; background-color:#e6e6e6;">
+<td colspan="3" style="text-align:right;">Total</td>
+<td style="text-align:right;">{{ total }}</td>
+</tr>
 </table>
 
 </body>
@@ -249,7 +253,7 @@ def generate_pdf(customer, today, total_due, rows):
     story.append(Spacer(1, 0.4*cm))
     story.append(
         Paragraph(
-            f"<b>Total Outstanding Amount:</b> AED {total_due:,.2f}",
+            f"<b>Total outstanding amount:</b> AED {total_due:,.2f}",
             styles["Normal"]
         )
     )
@@ -267,6 +271,13 @@ def generate_pdf(customer, today, total_due, rows):
             r["inv"],
             r["amt"]
         ])
+    # ---- TOTAL ROW ----
+    table_data.append([
+        "",
+        "",
+        "Total",
+        f"{total_due:,.2f}"
+    ])
 
     table = Table(
         table_data,
@@ -285,6 +296,10 @@ def generate_pdf(customer, today, total_due, rows):
         ("FONTSIZE", (0, 0), (-1, -1), 9),
         ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
         ("TOPPADDING", (0, 0), (-1, 0), 8),
+        ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
+        ("BACKGROUND", (0, -1), (-1, -1), colors.HexColor("#e6e6e6")),
+        ("ALIGN", (-1, -1), (-1, -1), "RIGHT"),
+        ("SPAN", (0, -1), (2, -1)),
     ]))
 
     story.append(table)
