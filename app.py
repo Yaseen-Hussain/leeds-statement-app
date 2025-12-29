@@ -110,12 +110,20 @@ if df_cust.empty:
     st.warning("No outstanding invoices for this customer.")
     st.stop()
 
-df_cust["Invoice Date"] = pd.to_datetime(
-    df_cust["Invoice Date"],
-    unit="D",
-    origin="1899-12-30",
-    errors="coerce"
-)
+def parse_invoice_date(x):
+    if pd.isna(x) or str(x).strip() == "":
+        return pd.NaT
+
+    # Excel serial date (number)
+    if isinstance(x, (int, float)):
+        return pd.to_datetime(x, unit="D", origin="1899-12-30")
+
+    # String date (already formatted in sheet)
+    return pd.to_datetime(x, errors="coerce")
+
+
+df_cust["Invoice Date"] = df_cust["Invoice Date"].apply(parse_invoice_date)
+
 
 df_cust = df_cust.sort_values("Invoice Date")
 
