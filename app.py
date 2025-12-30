@@ -49,7 +49,7 @@ if not st.session_state.authenticated:
             st.session_state.pwd_error = True
 
     if st.session_state.pwd_error:
-        st.error("❌ Wrong password")
+        st.error("Access denied: wrong password.")
 
     st.stop()
 
