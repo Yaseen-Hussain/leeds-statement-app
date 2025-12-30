@@ -35,14 +35,24 @@ st.set_page_config(page_title="Customer Statement", layout="centered")
 # -------- PASSWORD GATE --------
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
+    st.session_state.pwd_error = False
 
 if not st.session_state.authenticated:
     pwd = st.text_input("Enter Password", type="password")
-    if pwd == st.secrets["APP_PASSWORD"]:
-        st.session_state.authenticated = True
-        st.rerun()
-    else:
-        st.stop()
+
+    if pwd:
+        if pwd == st.secrets["APP_PASSWORD"]:
+            st.session_state.authenticated = True
+            st.session_state.pwd_error = False
+            st.rerun()
+        else:
+            st.session_state.pwd_error = True
+
+    if st.session_state.pwd_error:
+        st.error("❌ Wrong password")
+
+    st.stop()
+
 
 # -------- GOOGLE SHEETS --------
 scope = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
