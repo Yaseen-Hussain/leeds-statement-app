@@ -122,6 +122,8 @@ if customer is None:
 
 
 df_cust = df[df["Customer Name"] == customer].copy()
+start_date = df_cust["Invoice Date"].min().strftime("%d-%b-%Y")
+end_date = df_cust["Invoice Date"].max().strftime("%d-%b-%Y")
 
 if df_cust.empty:
     st.warning("No outstanding invoices for this customer.")
@@ -254,7 +256,7 @@ from PIL import Image
 from reportlab.platypus import Image
 
 
-def generate_pdf(customer, today, total_due, rows):
+def generate_pdf(customer, today, total_due, start_date, end_date, rows):
     buffer = BytesIO()
 
     doc = SimpleDocTemplate(
@@ -308,6 +310,15 @@ def generate_pdf(customer, today, total_due, rows):
         )
     )
     story.append(Spacer(1, 0.8*cm))
+
+    story.append(
+        Paragraph(
+            f"<b>Date range:</b> {start_date} to {end_date}",
+            styles["Normal"]
+        )
+    )
+    story.append(Spacer(1, 0.8*cm))
+
 
     # ---------- TABLE DATA ----------
     table_data = [
@@ -405,7 +416,14 @@ output = BytesIO()
 with pd.ExcelWriter(output, engine="openpyxl") as writer:
     excel_df.to_excel(writer, index=False, sheet_name="Statement")
 
-pdf_buffer = generate_pdf(customer, today, total_due, rows)
+pdf_buffer = generate_pdf(
+    customer,
+    today,
+    total_due,
+    start_date,
+    end_date,
+    rows
+)
 
 st.download_button(
     "Download PDF",
