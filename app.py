@@ -71,12 +71,12 @@ def load_invoice_data(sheet_id, worksheet_name):
     if len(values) < 3:
         return pd.DataFrame()
 
-    headers = values[1]   # Row 2 = headers
-    rows = values[2:]     # Row 3 onwards = data
+    headers = values[1]
+    rows = values[2:]
 
     df = pd.DataFrame(rows, columns=headers)
 
-    # Clean up numeric column
+    # ---- Due Amount ----
     df["Due Amount"] = (
         df["Due Amount"]
         .astype(str)
@@ -85,6 +85,14 @@ def load_invoice_data(sheet_id, worksheet_name):
     )
     df["Due Amount"] = pd.to_numeric(df["Due Amount"], errors="coerce")
 
+    # ---- Amount Received ----
+    df["Amount Received"] = (
+        df["Amount Received"]
+        .astype(str)
+        .str.replace(",", "", regex=False)
+        .str.strip()
+    )
+    df["Amount Received"] = pd.to_numeric(df["Amount Received"], errors="coerce")
 
     return df
 
