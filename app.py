@@ -169,7 +169,9 @@ Total outstanding amount: AED {{ total }}
 <th>S. No.</th>
 <th>Invoice Date</th>
 <th>Invoice No.</th>
-<th>Amount</th>
+<th>Due Amount</th>
+<th>Amount Received</th>
+<th>Received Date</th>
 </tr>
 
 {% for row in rows %}
@@ -178,6 +180,8 @@ Total outstanding amount: AED {{ total }}
 <td>{{ row.date }}</td>
 <td>{{ row.inv }}</td>
 <td style="text-align:right;">{{ row.amt }}</td>
+<td style="text-align:right;">{{ row.received_amt }}</td>
+<td>{{ row.received_date }}</td>
 </tr>
 {% endfor %}
 <tr style="font-weight:bold; background-color:#e6e6e6;">
@@ -196,6 +200,15 @@ for _, r in df_cust.iterrows():
         "date": r["Invoice Date"].strftime("%d-%b-%Y"),
         "inv": r["Invoice Number"],
         "amt": f"{r['Due Amount']:,.2f}"   # 👈 EXACT 2 decimal
+        "amt": f"{r['Due Amount']:,.2f}",
+        "received_amt": (
+            f"{float(r['Amount Received']):,.2f}"
+            if pd.notna(r.get("Amount Received")) else ""
+        ),
+        "received_date": (
+            parse_invoice_date(r["Received Date"]).strftime("%d-%b-%Y")
+            if pd.notna(r.get("Received Date")) else ""
+        )
     })
 
 html = Template(html_template).render(
@@ -283,7 +296,14 @@ def generate_pdf(customer, today, total_due, rows):
 
     # ---------- TABLE DATA ----------
     table_data = [
-        ["S. No.", "Invoice Date", "Invoice No.", "Amount"]
+        [
+        "S. No.",
+        "Invoice Date",
+        "Invoice No.",
+        "Due Amount",
+        "Amount Received",
+        "Received Date"
+        ]
     ]
 
     for i, r in enumerate(rows, start=1):
@@ -291,7 +311,9 @@ def generate_pdf(customer, today, total_due, rows):
             str(i),
             r["date"],
             r["inv"],
-            r["amt"]
+            r["amt"],
+            r["received_amt"],
+            r["received_date"]
         ])
     # ---- TOTAL ROW ----
     table_data.append([
@@ -303,7 +325,7 @@ def generate_pdf(customer, today, total_due, rows):
 
     table = Table(
         table_data,
-        colWidths=[2*cm, 4*cm, 6.5*cm, 4.5*cm],
+        colWidths=[1.5*cm, 3.5*cm, 5*cm, 3*cm, 3*cm, 3.5*cm]
         repeatRows=1
     )
 
@@ -344,7 +366,15 @@ def generate_pdf(customer, today, total_due, rows):
 
 
 # -------- EXCEL --------
-excel_df = df_cust[["Invoice Date", "Invoice Number", "Due Amount"]]
+excel_df = df_cust[
+    [
+        "Invoice Date",
+        "Invoice Number",
+        "Due Amount",
+        "Amount Received",
+        "Received Date"
+    ]
+]
 excel_df.insert(0, "S. No.", range(1, len(excel_df) + 1))
 
 output = BytesIO()
