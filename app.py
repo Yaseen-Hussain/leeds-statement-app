@@ -206,16 +206,19 @@ def format_amount(x):
 rows = []
 
 for _, r in df_cust.iterrows():
+    parsed_received_date = parse_invoice_date(r["Received Date"])
+
     rows.append({
         "date": r["Invoice Date"].strftime("%d-%b-%Y"),
         "inv": r["Invoice Number"],
         "amt": format_amount(r["Due Amount"]),
         "received_amt": format_amount(r["Amount Received"]),
         "received_date": (
-            parse_invoice_date(r["Received Date"]).strftime("%d-%b-%Y")
-            if pd.notna(r["Received Date"]) else ""
+            parsed_received_date.strftime("%d-%b-%Y")
+            if pd.notna(parsed_received_date) else ""
         )
     })
+
 
 
 html = Template(html_template).render(
