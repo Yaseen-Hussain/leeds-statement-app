@@ -122,8 +122,15 @@ if customer is None:
 
 
 df_cust = df[df["Customer Name"] == customer].copy()
-start_date = df_cust["Invoice Date"].min().strftime("%d-%b-%Y")
-end_date = df_cust["Invoice Date"].max().strftime("%d-%b-%Y")
+valid_dates = df_cust["Invoice Date"].dropna()
+
+if valid_dates.empty:
+    start_date = ""
+    end_date = ""
+else:
+    start_date = valid_dates.min().strftime("%d-%b-%Y")
+    end_date = valid_dates.max().strftime("%d-%b-%Y")
+
 
 if df_cust.empty:
     st.warning("No outstanding invoices for this customer.")
@@ -141,7 +148,11 @@ def parse_invoice_date(x):
     return pd.to_datetime(x, errors="coerce")
 
 
-df_cust["Invoice Date"] = df_cust["Invoice Date"].apply(parse_invoice_date)
+df_cust["Invoice Date"] = pd.to_datetime(
+    df_cust["Invoice Date"],
+    errors="coerce",
+    dayfirst=True
+)
 
 
 df_cust = df_cust.sort_values("Invoice Date")
