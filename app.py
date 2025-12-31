@@ -236,7 +236,10 @@ for _, r in df_cust.iterrows():
     parsed_received_date = parse_invoice_date(r["Received Date"])
 
     rows.append({
-        "date": r["Invoice Date"].strftime("%d-%b-%Y"),
+        "date": (
+            r["Invoice Date Parsed"].strftime("%d-%b-%Y")
+            if pd.notna(r["Invoice Date Parsed"]) else ""
+        ),
         "inv": r["Invoice Number"],
         "amt": format_amount(r["Due Amount"]),
         "received_amt": format_amount(r["Amount Received"]),
@@ -245,6 +248,7 @@ for _, r in df_cust.iterrows():
             if pd.notna(parsed_received_date) else ""
         )
     })
+
 
 
 
