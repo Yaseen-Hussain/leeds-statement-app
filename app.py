@@ -173,29 +173,24 @@ Total outstanding amount: AED {{ total }}
 
 <table>
 <tr>
-<th>S. No.</th>
-<th>Invoice Date</th>
-<th>Invoice No.</th>
-<th>Due Amount</th>
-<th>Amount Received</th>
-<th>Received Date</th>
+  <th>S. No.</th>
+  <th>Invoice Date</th>
+  <th>Invoice No.</th>
+  <th>Due Amount</th>
 </tr>
 
 {% for row in rows %}
 <tr>
-<td>{{ loop.index }}</td>
-<td>{{ row.date }}</td>
-<td>{{ row.inv }}</td>
-<td style="text-align:right;">{{ row.amt }}</td>
-<td style="text-align:right;">{{ row.received_amt }}</td>
-<td>{{ row.received_date }}</td>
+  <td>{{ loop.index }}</td>
+  <td>{{ row.date }}</td>
+  <td>{{ row.inv }}</td>
+  <td style="text-align:right;">{{ row.amt }}</td>
 </tr>
 {% endfor %}
-<tr style="font-weight:bold; background-color:#e6e6e6;">
-<td colspan="3" style="text-align:right;">Total</td>
-<td style="text-align:right;">{{ total_due }}</td>
-<td style="text-align:right;">{{ total_received }}</td>
-<td></td>
+
+<tr style="background-color:#e6e6e6; font-weight:bold;">
+  <td colspan="3" style="text-align:center;">Total</td>
+  <td style="text-align:right;">{{ total }}</td>
 </tr>
 </table>
 
