@@ -137,6 +137,7 @@ df_cust["Invoice Date"] = df_cust["Invoice Date"].apply(parse_invoice_date)
 df_cust = df_cust.sort_values("Invoice Date")
 
 total_due = df_cust["Due Amount"].sum()
+total_received = df_cust["Amount Received"].sum(skipna=True)
 today = datetime.date.today().strftime("%d-%b-%Y")
 
 
@@ -184,7 +185,9 @@ Total outstanding amount: AED {{ total }}
 {% endfor %}
 <tr style="font-weight:bold; background-color:#e6e6e6;">
 <td colspan="3" style="text-align:right;">Total</td>
-<td style="text-align:right;">{{ total }}</td>
+<td style="text-align:right;">{{ total_due }}</td>
+<td style="text-align:right;">{{ total_received }}</td>
+<td></td>
 </tr>
 </table>
 
@@ -223,6 +226,7 @@ html = Template(html_template).render(
     customer=customer,
     date=today,
     total=f"{total_due:,.2f}",
+    total_received=f"{total_received:,.2f}",
     rows=rows
 )
 
@@ -328,8 +332,11 @@ def generate_pdf(customer, today, total_due, rows):
         "Total",
         "",
         "",
-        f"{total_due:,.2f}"
+        f"{total_due:,.2f}",
+        f"{total_received:,.2f}",
+        ""
     ])
+
 
     table = Table(
         table_data,
