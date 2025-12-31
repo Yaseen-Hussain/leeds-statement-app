@@ -200,7 +200,6 @@ for _, r in df_cust.iterrows():
         "date": r["Invoice Date"].strftime("%d-%b-%Y"),
         "inv": r["Invoice Number"],
         "amt": f"{r['Due Amount']:,.2f}"   # 👈 EXACT 2 decimal
-        "amt": f"{r['Due Amount']:,.2f}",
         "received_amt": (
             f"{float(r['Amount Received']):,.2f}"
             if pd.notna(r.get("Amount Received")) else ""
