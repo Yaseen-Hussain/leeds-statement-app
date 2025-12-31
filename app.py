@@ -338,21 +338,27 @@ def generate_pdf(customer, today, total_due, rows):
     )
 
     table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1f2a5a")),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("ALIGN", (0, 0), (-1, 0), "CENTER"),
-        ("ALIGN", (-1, 1), (-1, -1), "RIGHT"),
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
-        ("FONTSIZE", (0, 0), (-1, -1), 9),
-        ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
-        ("TOPPADDING", (0, 0), (-1, 0), 8),
-        ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
-        ("BACKGROUND", (0, -1), (-1, -1), colors.HexColor("#e6e6e6")),
-        ("ALIGN", (-1, -1), (-1, -1), "RIGHT"),
-        ("SPAN", (0, -1), (2, -1)),
-    ]))
+    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1f2a5a")),
+    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+    ("ALIGN", (0, 0), (-1, 0), "CENTER"),
+
+    # 👉 Right-align Amount columns (5 & 6)
+    ("ALIGN", (3, 1), (4, -1), "RIGHT"),
+
+    ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+    ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
+    ("FONTSIZE", (0, 0), (-1, -1), 9),
+    ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+    ("TOPPADDING", (0, 0), (-1, 0), 8),
+
+    # Total row styling
+    ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
+    ("BACKGROUND", (0, -1), (-1, -1), colors.HexColor("#e6e6e6")),
+    ("ALIGN", (3, -1), (4, -1), "RIGHT"),
+    ("SPAN", (0, -1), (2, -1)),
+]))
+
 
     story.append(table)
 
