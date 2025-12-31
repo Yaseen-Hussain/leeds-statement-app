@@ -121,44 +121,54 @@ if customer is None:
 
 
 
+# ---------------- CUSTOMER FILTER ----------------
 df_cust = df[df["Customer Name"] == customer].copy()
-valid_dates = df_cust["Invoice Date"].dropna()
+
+if df_cust.empty:
+    st.warning("No invoices found for this customer.")
+    st.stop()
+
+
+# ---------------- DATE PARSING (ROBUST) ----------------
+def parse_invoice_date(x):
+    if pd.isna(x) or str(x).strip() == "":
+        return pd.NaT
+
+    # Excel serial date
+    if isinstance(x, (int, float)):
+        return pd.to_datetime(x, unit="D", origin="1899-12-30")
+
+    # String date
+    return pd.to_datetime(str(x).strip(), errors="coerce", dayfirst=True)
+
+
+df_cust["Invoice Date Parsed"] = df_cust["Invoice Date"].apply(parse_invoice_date)
+
+
+# ---------------- SORT BY DATE ----------------
+df_cust = df_cust.sort_values("Invoice Date Parsed")
+
+
+# ---------------- DATE RANGE (SAFE) ----------------
+valid_dates = df_cust["Invoice Date Parsed"].dropna()
 
 if valid_dates.empty:
     start_date = ""
     end_date = ""
 else:
-    start_date = valid_dates.min().strftime("%d-%b-%Y")
-    end_date = valid_dates.max().strftime("%d-%b-%Y")
+    start_date = valid_dates.iloc[0].strftime("%d-%b-%Y")
+    end_date = valid_dates.iloc[-1].strftime("%d-%b-%Y")
 
 
-if df_cust.empty:
-    st.warning("No outstanding invoices for this customer.")
-    st.stop()
+# ---------------- TOTALS ----------------
+total_due = pd.to_numeric(
+    df_cust["Due Amount"], errors="coerce"
+).sum(skipna=True)
 
-def parse_invoice_date(x):
-    if pd.isna(x) or str(x).strip() == "":
-        return pd.NaT
+total_received = pd.to_numeric(
+    df_cust["Amount Received"], errors="coerce"
+).sum(skipna=True)
 
-    # Excel serial date (number)
-    if isinstance(x, (int, float)):
-        return pd.to_datetime(x, unit="D", origin="1899-12-30")
-
-    # String date (already formatted in sheet)
-    return pd.to_datetime(x, errors="coerce")
-
-
-df_cust["Invoice Date"] = pd.to_datetime(
-    df_cust["Invoice Date"],
-    errors="coerce",
-    dayfirst=True
-)
-
-
-df_cust = df_cust.sort_values("Invoice Date")
-
-total_due = df_cust["Due Amount"].sum()
-total_received = df_cust["Amount Received"].sum(skipna=True)
 today = datetime.date.today().strftime("%d-%b-%Y")
 
 
