@@ -194,21 +194,29 @@ Total outstanding amount: AED {{ total }}
 </html>
 """
 
+def format_amount(x):
+    try:
+        if pd.isna(x):
+            return ""
+        return f"{float(x):,.2f}"
+    except (ValueError, TypeError):
+        return ""
+
+
 rows = []
+
 for _, r in df_cust.iterrows():
     rows.append({
         "date": r["Invoice Date"].strftime("%d-%b-%Y"),
         "inv": r["Invoice Number"],
-        "amt": f"{r['Due Amount']:,.2f}",  # EXACT 2 decimals
-        "received_amt": (
-            f"{r['Amount Received']:,.2f}"
-            if pd.notna(r.get("Amount Received")) else ""
-        ),
+        "amt": format_amount(r["Due Amount"]),
+        "received_amt": format_amount(r["Amount Received"]),
         "received_date": (
             parse_invoice_date(r["Received Date"]).strftime("%d-%b-%Y")
-            if pd.notna(r.get("Received Date")) else ""
+            if pd.notna(r["Received Date"]) else ""
         )
     })
+
 
 html = Template(html_template).render(
     customer=customer,
