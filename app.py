@@ -97,8 +97,6 @@ st.markdown("<h2 style='text-align:center'>Statement</h2>", unsafe_allow_html=Tr
 line = st.selectbox("Select Line", list(LINES.keys()))
 
 df = load_invoice_data(LINES[line], INVOICE_SHEET_NAME)
-df = df[df["Due Amount"] > 0]
-
 
 customers = sorted(df["Customer Name"].unique())
 
