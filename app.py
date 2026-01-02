@@ -379,7 +379,7 @@ def generate_pdf(customer, today, total_due, start_date, end_date, rows):
 
     table = Table(
         table_data,
-        colWidths=[1.5*cm, 3.5*cm, 5*cm, 3*cm, 3*cm, 3.5*cm],
+        colWidths=[1.4*cm, 3*cm, 3.5*cm, 3*cm, 3*cm, 3*cm],
         repeatRows=1
     )
 
