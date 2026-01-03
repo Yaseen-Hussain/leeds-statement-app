@@ -23,7 +23,8 @@ from PIL import Image
 LINES = {
     "Al Ain": "10-fOy3E-ni7XBtbC6zI-ivVrom481ZAZiS4xau0Ikpg",
     "Ajman": "1roBccgFgdXzGI3kEz5oRReADW7iKzWi-QboO2_scTKI",
-    "Abu Dhabi": "10FTh4V5X8Y14u_6lIKUnaERlOX9b9F0x2xQ1vLXa2tY"
+    "Abu Dhabi": "10FTh4V5X8Y14u_6lIKUnaERlOX9b9F0x2xQ1vLXa2tY",
+    "Fujairah": "1jD28UaXTLj9pTXrmtl17FfLoWM9qbUVnWudCG7oORQg"
 }
 
 INVOICE_SHEET_NAME = "Invoice Wise"
