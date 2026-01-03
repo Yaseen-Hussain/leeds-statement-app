@@ -326,7 +326,6 @@ def generate_pdf(customer, today, total_due, start_date, end_date, rows):
 
     # ---------- META ----------
     story.append(Paragraph(f"<b>Customer Name:</b> {customer}", styles["Normal"]))
-    story.append(Paragraph(f"<b>As on Date:</b> {today}", styles["Normal"]))
     story.append(Spacer(1, 0.4*cm))
     story.append(
         Paragraph(
