@@ -113,7 +113,7 @@ def generate_pdf(customer, today, total_due, date_range, rows):
 
     story.append(
         Paragraph(
-            f"<b>Date range:</b> {display_date_range}",
+            f"<b>Date range:</b> {date_range}",
             styles["Normal"]
         )
     )
