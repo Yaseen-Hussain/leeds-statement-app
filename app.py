@@ -18,7 +18,29 @@ from PIL import Image
 import zipfile
 import io
 
+# ---------------- HELPER FUNCTIONS ----------------
+def parse_invoice_date(x):
+    if pd.isna(x) or str(x).strip() == "":
+        return pd.NaT
 
+    # Excel serial date
+    if isinstance(x, (int, float)):
+        return pd.to_datetime(x, unit="D", origin="1899-12-30")
+
+    # String date
+    return pd.to_datetime(str(x).strip(), errors="coerce", dayfirst=True)
+
+
+df_cust["Invoice Date Parsed"] = df_cust["Invoice Date"].apply(parse_invoice_date)
+
+
+def format_amount(x):
+    try:
+        if pd.isna(x):
+            return ""
+        return f"{float(x):,.2f}"
+    except (ValueError, TypeError):
+        return ""
 
 
 
@@ -275,20 +297,6 @@ if df_cust.empty:
     st.stop()
 
 
-# ---------------- DATE PARSING (ROBUST) ----------------
-def parse_invoice_date(x):
-    if pd.isna(x) or str(x).strip() == "":
-        return pd.NaT
-
-    # Excel serial date
-    if isinstance(x, (int, float)):
-        return pd.to_datetime(x, unit="D", origin="1899-12-30")
-
-    # String date
-    return pd.to_datetime(str(x).strip(), errors="coerce", dayfirst=True)
-
-
-df_cust["Invoice Date Parsed"] = df_cust["Invoice Date"].apply(parse_invoice_date)
 
 
 # ---------------- SORT BY DATE ----------------
@@ -385,13 +393,7 @@ Total outstanding amount: AED {{ total }}
 </html>
 """
 
-def format_amount(x):
-    try:
-        if pd.isna(x):
-            return ""
-        return f"{float(x):,.2f}"
-    except (ValueError, TypeError):
-        return ""
+
 
 
 rows = []
