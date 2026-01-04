@@ -200,6 +200,8 @@ def generate_pdf(customer, today, total_due, date_range, rows):
     buffer.seek(0)
     return buffer
 
+today = datetime.date.today().strftime("%d-%b-%Y")
+
 # ---------------- CONFIG ----------------
 LINES = {
     "Al Ain": "10-fOy3E-ni7XBtbC6zI-ivVrom481ZAZiS4xau0Ikpg",
@@ -495,8 +497,6 @@ total_due = pd.to_numeric(
 total_received = pd.to_numeric(
     df_cust["Amount Received"], errors="coerce"
 ).sum(skipna=True)
-
-today = datetime.date.today().strftime("%d-%b-%Y")
 
 
 # -------- HTML TEMPLATE --------
