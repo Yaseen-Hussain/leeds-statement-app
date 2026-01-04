@@ -38,7 +38,167 @@ def format_amount(x):
     except (ValueError, TypeError):
         return ""
 
+# -------- PDF --------
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    Table,
+    TableStyle
+)
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm
+from reportlab.lib import colors
+from reportlab.lib.utils import ImageReader
+from io import BytesIO
+from pathlib import Path
+from PIL import Image
+from reportlab.platypus import Image
 
+
+def generate_pdf(customer, today, total_due, date_range, rows):
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=2*cm,
+        leftMargin=2*cm,
+        topMargin=2*cm,
+        bottomMargin=2*cm
+    )
+
+    styles = getSampleStyleSheet()
+    story = []
+
+    # ---------- LOGO ----------
+    logo_path = Path(__file__).resolve().parent / "logo.png"
+
+    if logo_path.exists():
+        logo = Image(
+            str(logo_path),
+            width=4*cm,
+            height=2*cm
+        )
+        logo.hAlign = "CENTER"
+
+        story.append(logo)
+        story.append(Spacer(1, 0.6*cm))
+
+
+    # ---------- TITLES ----------
+    title_style = ParagraphStyle(
+        "Title",
+        parent=styles["Normal"],
+        fontSize=14,
+        leading=18,
+        alignment=1,
+        fontName="Helvetica-Bold"
+    )
+
+    story.append(Paragraph("Outstanding Invoice Statement", title_style))
+    story.append(Spacer(1, 0.8*cm))
+
+    # ---------- META ----------
+    story.append(Paragraph(f"<b>Customer Name:</b> {customer}", styles["Normal"]))
+    story.append(Spacer(1, 0.4*cm))
+    story.append(
+        Paragraph(
+            f"<b>Total outstanding amount:</b> AED {total_due:,.2f}",
+            styles["Normal"]
+        )
+    )
+    story.append(Spacer(1, 0.8*cm))
+
+    story.append(
+        Paragraph(
+            f"<b>Date range:</b> {display_date_range}",
+            styles["Normal"]
+        )
+    )
+    story.append(Spacer(1, 0.6*cm))
+
+
+
+    # ---------- TABLE DATA ----------
+    table_data = [
+        [
+        "S. No.",
+        "Invoice Date",
+        "Invoice No.",
+        "Due Amount",
+        "Amount Received",
+        "Received Date"
+        ]
+    ]
+
+    for i, r in enumerate(rows, start=1):
+        table_data.append([
+            str(i),
+            r["date"],
+            r["inv"],
+            r["amt"],
+            r["received_amt"],
+            r["received_date"]
+        ])
+    # ---- TOTAL ROW ----
+    table_data.append([
+        "Total",
+        "",
+        "",
+        f"{total_due:,.2f}",
+        f"{total_received:,.2f}",
+        ""
+    ])
+
+
+    table = Table(
+        table_data,
+        colWidths=[1.4*cm, 3*cm, 3.5*cm, 3*cm, 3*cm, 3*cm],
+        repeatRows=1
+    )
+
+    table.setStyle(TableStyle([
+    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1f2a5a")),
+    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+    ("ALIGN", (0, 0), (-1, 0), "CENTER"),
+
+    # 👉 Right-align Amount columns (5 & 6)
+    ("ALIGN", (3, 1), (4, -1), "RIGHT"),
+
+    ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+    ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
+    ("FONTSIZE", (0, 0), (-1, -1), 9),
+    ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+    ("TOPPADDING", (0, 0), (-1, 0), 8),
+
+    # Total row styling
+    ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
+    ("BACKGROUND", (0, -1), (-1, -1), colors.HexColor("#e6e6e6")),
+    ("ALIGN", (3, -1), (4, -1), "RIGHT"),
+    ("SPAN", (0, -1), (2, -1)),
+]))
+
+
+    story.append(table)
+
+    # ---------- FOOTER ----------
+    story.append(Spacer(1, 0.8*cm))
+    footer = Paragraph(
+        "This is a system-generated statement and does not require a signature.",
+        ParagraphStyle(
+            "Footer",
+            fontSize=8,
+            alignment=1
+        )
+    )
+    story.append(footer)
+
+    doc.build(story)
+    buffer.seek(0)
+    return buffer
 
 # ---------------- CONFIG ----------------
 LINES = {
@@ -425,167 +585,7 @@ html = Template(html_template).render(
 
 st.markdown(html, unsafe_allow_html=True)
 
-# -------- PDF --------
-from reportlab.platypus import (
-    SimpleDocTemplate,
-    Paragraph,
-    Spacer,
-    Table,
-    TableStyle
-)
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import cm
-from reportlab.lib import colors
-from reportlab.lib.utils import ImageReader
-from io import BytesIO
-from pathlib import Path
-from PIL import Image
-from reportlab.platypus import Image
 
-
-def generate_pdf(customer, today, total_due, date_range, rows):
-    buffer = BytesIO()
-
-    doc = SimpleDocTemplate(
-        buffer,
-        pagesize=A4,
-        rightMargin=2*cm,
-        leftMargin=2*cm,
-        topMargin=2*cm,
-        bottomMargin=2*cm
-    )
-
-    styles = getSampleStyleSheet()
-    story = []
-
-    # ---------- LOGO ----------
-    logo_path = Path(__file__).resolve().parent / "logo.png"
-
-    if logo_path.exists():
-        logo = Image(
-            str(logo_path),
-            width=4*cm,
-            height=2*cm
-        )
-        logo.hAlign = "CENTER"
-
-        story.append(logo)
-        story.append(Spacer(1, 0.6*cm))
-
-
-    # ---------- TITLES ----------
-    title_style = ParagraphStyle(
-        "Title",
-        parent=styles["Normal"],
-        fontSize=14,
-        leading=18,
-        alignment=1,
-        fontName="Helvetica-Bold"
-    )
-
-    story.append(Paragraph("Outstanding Invoice Statement", title_style))
-    story.append(Spacer(1, 0.8*cm))
-
-    # ---------- META ----------
-    story.append(Paragraph(f"<b>Customer Name:</b> {customer}", styles["Normal"]))
-    story.append(Spacer(1, 0.4*cm))
-    story.append(
-        Paragraph(
-            f"<b>Total outstanding amount:</b> AED {total_due:,.2f}",
-            styles["Normal"]
-        )
-    )
-    story.append(Spacer(1, 0.8*cm))
-
-    story.append(
-        Paragraph(
-            f"<b>Date range:</b> {display_date_range}",
-            styles["Normal"]
-        )
-    )
-    story.append(Spacer(1, 0.6*cm))
-
-
-
-    # ---------- TABLE DATA ----------
-    table_data = [
-        [
-        "S. No.",
-        "Invoice Date",
-        "Invoice No.",
-        "Due Amount",
-        "Amount Received",
-        "Received Date"
-        ]
-    ]
-
-    for i, r in enumerate(rows, start=1):
-        table_data.append([
-            str(i),
-            r["date"],
-            r["inv"],
-            r["amt"],
-            r["received_amt"],
-            r["received_date"]
-        ])
-    # ---- TOTAL ROW ----
-    table_data.append([
-        "Total",
-        "",
-        "",
-        f"{total_due:,.2f}",
-        f"{total_received:,.2f}",
-        ""
-    ])
-
-
-    table = Table(
-        table_data,
-        colWidths=[1.4*cm, 3*cm, 3.5*cm, 3*cm, 3*cm, 3*cm],
-        repeatRows=1
-    )
-
-    table.setStyle(TableStyle([
-    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1f2a5a")),
-    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-    ("ALIGN", (0, 0), (-1, 0), "CENTER"),
-
-    # 👉 Right-align Amount columns (5 & 6)
-    ("ALIGN", (3, 1), (4, -1), "RIGHT"),
-
-    ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
-    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-    ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
-    ("FONTSIZE", (0, 0), (-1, -1), 9),
-    ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
-    ("TOPPADDING", (0, 0), (-1, 0), 8),
-
-    # Total row styling
-    ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
-    ("BACKGROUND", (0, -1), (-1, -1), colors.HexColor("#e6e6e6")),
-    ("ALIGN", (3, -1), (4, -1), "RIGHT"),
-    ("SPAN", (0, -1), (2, -1)),
-]))
-
-
-    story.append(table)
-
-    # ---------- FOOTER ----------
-    story.append(Spacer(1, 0.8*cm))
-    footer = Paragraph(
-        "This is a system-generated statement and does not require a signature.",
-        ParagraphStyle(
-            "Footer",
-            fontSize=8,
-            alignment=1
-        )
-    )
-    story.append(footer)
-
-    doc.build(story)
-    buffer.seek(0)
-    return buffer
 
 
 # -------- EXCEL --------
