@@ -33,12 +33,11 @@ INVOICE_SHEET_NAME = "Invoice Wise"
 
 st.set_page_config(page_title="Customer Statement", layout="centered")
 
-# -------- PASSWORD GATE (CENTERED) --------
+# -------- PASSWORD GATE (CENTERED + ENTER SUPPORT) --------
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
 if not st.session_state.authenticated:
-    # Create 3 columns to center content
     col1, col2, col3 = st.columns([1, 2, 1])
 
     with col2:
@@ -51,9 +50,12 @@ if not st.session_state.authenticated:
             unsafe_allow_html=True
         )
 
-        pwd = st.text_input("Password", type="password")
-
-        login_clicked = st.button("Login", use_container_width=True)
+        with st.form("login_form"):
+            pwd = st.text_input("Password", type="password")
+            login_clicked = st.form_submit_button(
+                "Login",
+                use_container_width=True
+            )
 
         if login_clicked:
             if pwd == st.secrets["APP_PASSWORD"]:
@@ -63,6 +65,7 @@ if not st.session_state.authenticated:
                 st.error("Wrong password")
 
     st.stop()
+
 
 
 
