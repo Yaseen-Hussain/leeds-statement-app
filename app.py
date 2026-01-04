@@ -354,6 +354,11 @@ if download_all_clicked:
                 df_cust_bulk["Due Amount"], errors="coerce"
             ).sum(skipna=True)
 
+            if total_due_bulk <= 0:
+                skipped_customers += 1
+                progress.progress(idx / total_customers)
+                continue
+
             total_received_bulk = pd.to_numeric(
                 df_cust_bulk["Amount Received"], errors="coerce"
             ).sum(skipna=True)
@@ -609,14 +614,6 @@ with pd.ExcelWriter(output, engine="openpyxl") as writer:
     ws["A2"] = f"Date range: {display_date_range}"
 
 
-pdf_buffer = generate_pdf(
-    customer=customer,
-    today=today,
-    total_due=total_due,
-    total_received=total_received,
-    date_range=display_date_range,
-    rows=rows
-)
 
 
 safe_range = display_date_range.replace(" ", "").replace("-", "")
