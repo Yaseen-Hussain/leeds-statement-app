@@ -30,10 +30,6 @@ def parse_invoice_date(x):
     # String date
     return pd.to_datetime(str(x).strip(), errors="coerce", dayfirst=True)
 
-
-df_cust["Invoice Date Parsed"] = df_cust["Invoice Date"].apply(parse_invoice_date)
-
-
 def format_amount(x):
     try:
         if pd.isna(x):
@@ -90,7 +86,6 @@ if not st.session_state.authenticated:
                 st.error("Wrong password")
 
     st.stop()
-
 
 
 
@@ -296,6 +291,7 @@ if df_cust.empty:
     st.warning("No invoices found for this customer.")
     st.stop()
 
+df_cust["Invoice Date Parsed"] = df_cust["Invoice Date"].apply(parse_invoice_date)
 
 
 
