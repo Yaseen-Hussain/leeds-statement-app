@@ -57,7 +57,7 @@ from PIL import Image
 from reportlab.platypus import Image
 
 
-def generate_pdf(customer, today, total_due, date_range, rows):
+def generate_pdf(customer, today, total_due, total_received, date_range, rows):
     buffer = BytesIO()
 
     doc = SimpleDocTemplate(
@@ -380,9 +380,11 @@ if download_all_clicked:
                 customer=cust,
                 today=today,
                 total_due=total_due_bulk,
+                total_received=total_received_bulk,
                 date_range=date_range,
                 rows=rows_bulk
             )
+
 
             file_name = f"{cust}_{line_safe}_Statement_{today_str}.pdf"
             zipf.writestr(file_name, pdf_buffer.getvalue())
