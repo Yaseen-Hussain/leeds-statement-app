@@ -135,6 +135,32 @@ if customer is None:
     st.info("Please select a customer to view the statement.")
     st.stop()
 
+#Date_range
+    
+st.markdown("### Statement Period")
+
+period_type = st.radio(
+    "Select statement type",
+    ["All invoices", "Date range"],
+    horizontal=True
+)
+
+start_date_input = None
+end_date_input = None
+
+if period_type == "Date range":
+    col1, col2 = st.columns(2)
+
+    with col1:
+        start_date_input = st.date_input("Start date")
+
+    with col2:
+        end_date_input = st.date_input("End date")
+
+    if start_date_input > end_date_input:
+        st.error("Start date cannot be after End date")
+        st.stop()
+
 
 
 # ---------------- CUSTOMER FILTER ----------------
@@ -165,15 +191,32 @@ df_cust["Invoice Date Parsed"] = df_cust["Invoice Date"].apply(parse_invoice_dat
 df_cust = df_cust.sort_values("Invoice Date Parsed")
 
 
+# ---------------- DATE RANGE FILTER ----------------
+if period_type == "Date range":
+    start_dt = pd.to_datetime(start_date_input)
+    end_dt = pd.to_datetime(end_date_input)
+
+    df_cust = df_cust[
+        (df_cust["Invoice Date Parsed"] >= start_dt) &
+        (df_cust["Invoice Date Parsed"] <= end_dt)
+    ]
+
+    if df_cust.empty:
+        st.warning("No invoices found in selected date range.")
+        st.stop()
+
+
+
 # ---------------- DATE RANGE (SAFE) ----------------
 valid_dates = df_cust["Invoice Date Parsed"].dropna()
 
 if valid_dates.empty:
-    start_date = ""
-    end_date = ""
+    display_date_range = "All dates"
 else:
-    start_date = valid_dates.iloc[0].strftime("%d-%b-%Y")
-    end_date = valid_dates.iloc[-1].strftime("%d-%b-%Y")
+    display_start = valid_dates.iloc[0].strftime("%d-%b-%Y")
+    display_end = valid_dates.iloc[-1].strftime("%d-%b-%Y")
+    display_date_range = f"{display_start} to {display_end}"
+
 
 
 # ---------------- TOTALS ----------------
@@ -209,6 +252,7 @@ th { background-color: #1f2a5a; color: white; }
 <div class="summary">
 Total outstanding amount: AED {{ total }}
 </div>
+<p><b>Date range:</b> {{ date_range }}</p>
 
 <table>
 <tr>
@@ -272,9 +316,10 @@ html = Template(html_template).render(
     customer=customer,
     date=today,
     total=f"{total_due:,.2f}",
-    total_received=f"{total_received:,.2f}",
+    date_range=display_date_range,
     rows=rows
 )
+
 
 st.markdown(html, unsafe_allow_html=True)
 
@@ -297,7 +342,7 @@ from PIL import Image
 from reportlab.platypus import Image
 
 
-def generate_pdf(customer, today, total_due, start_date, end_date, rows):
+def generate_pdf(customer, today, total_due, date_range, rows):
     buffer = BytesIO()
 
     doc = SimpleDocTemplate(
@@ -353,11 +398,12 @@ def generate_pdf(customer, today, total_due, start_date, end_date, rows):
 
     story.append(
         Paragraph(
-            f"<b>Date range:</b> {start_date} to {end_date}",
+            f"<b>Date range:</b> {display_date_range}",
             styles["Normal"]
         )
     )
-    story.append(Spacer(1, 0.8*cm))
+    story.append(Spacer(1, 0.6*cm))
+
 
 
     # ---------- TABLE DATA ----------
@@ -441,41 +487,45 @@ def generate_pdf(customer, today, total_due, start_date, end_date, rows):
 
 
 # -------- EXCEL --------
-excel_df = df_cust[
-    [
-        "Invoice Date",
-        "Invoice Number",
-        "Due Amount",
-        "Amount Received",
-        "Received Date"
-    ]
-]
+excel_df = df_cust[[
+    "Invoice Date",
+    "Invoice Number",
+    "Due Amount",
+    "Amount Received"
+]]
+
 excel_df.insert(0, "S. No.", range(1, len(excel_df) + 1))
 
 output = BytesIO()
 with pd.ExcelWriter(output, engine="openpyxl") as writer:
-    excel_df.to_excel(writer, index=False, sheet_name="Statement")
+    excel_df.to_excel(writer, index=False, startrow=3, sheet_name="Statement")
+
+    ws = writer.sheets["Statement"]
+    ws["A1"] = f"Customer: {customer}"
+    ws["A2"] = f"Date range: {display_date_range}"
+
 
 pdf_buffer = generate_pdf(
     customer,
     today,
     total_due,
-    start_date,
-    end_date,
+    display_date_range,
     rows
 )
+
+safe_range = display_date_range.replace(" ", "").replace("-", "")
 
 st.download_button(
     "Download PDF",
     data=pdf_buffer,
-    file_name=f"{customer}_Leedsgifts_Statement_{today}.pdf",
+    file_name=f"{customer}_Statement_{safe_range}.pdf",
     mime="application/pdf"
 )
 
 st.download_button(
     "Download Excel",
     data=output.getvalue(),
-    file_name=f"{customer}_Leedsgifts_Statement_{today}.xlsx",
+    file_name=f"{customer}_Statement_{safe_range}.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
 
