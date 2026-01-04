@@ -36,23 +36,24 @@ st.set_page_config(page_title="Customer Statement", layout="centered")
 # -------- PASSWORD GATE --------
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
-    st.session_state.pwd_error = False
 
 if not st.session_state.authenticated:
-    pwd = st.text_input("Enter Password", type="password")
+    st.markdown("### Login")
 
-    if pwd:
+    pwd = st.text_input("Password", type="password")
+
+    login_clicked = st.button("Login")
+
+    if login_clicked:
         if pwd == st.secrets["APP_PASSWORD"]:
             st.session_state.authenticated = True
-            st.session_state.pwd_error = False
+            st.success("Login successful")
             st.rerun()
         else:
-            st.session_state.pwd_error = True
-
-    if st.session_state.pwd_error:
-        st.error("Access denied: wrong password.")
+            st.error("Wrong password")
 
     st.stop()
+
 
 
 # -------- GOOGLE SHEETS --------
