@@ -15,6 +15,9 @@ from io import BytesIO
 import os
 from pathlib import Path
 from PIL import Image
+import zipfile
+import io
+
 
 
 
@@ -121,6 +124,107 @@ st.markdown("<h2 style='text-align:center'>Statement</h2>", unsafe_allow_html=Tr
 line = st.selectbox("Select Line", list(LINES.keys()))
 
 df = load_invoice_data(LINES[line], INVOICE_SHEET_NAME)
+
+# ================= BULK DOWNLOAD SECTION =================
+st.markdown("## Bulk Downloads (Line-wise)")
+
+confirm_bulk = st.checkbox(
+    "I understand this will generate statements for all customers in this line (may take a minute)."
+)
+
+download_all_clicked = st.button(
+    "Download all customer statements (ZIP)",
+    disabled=not confirm_bulk
+)
+
+if download_all_clicked:
+    st.info("Generating statements. Please wait...")
+
+    progress = st.progress(0)
+
+    zip_buffer = io.BytesIO()
+    skipped_customers = 0
+
+    customers_in_line = sorted(df["Customer Name"].dropna().unique())
+    total_customers = len(customers_in_line)
+
+    today_str = datetime.date.today().strftime("%Y-%m-%d")
+    line_safe = line.replace(" ", "")
+
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
+        for idx, cust in enumerate(customers_in_line, start=1):
+            df_cust_bulk = df[df["Customer Name"] == cust].copy()
+
+            if df_cust_bulk.empty:
+                skipped_customers += 1
+                continue
+
+            df_cust_bulk["Invoice Date Parsed"] = df_cust_bulk["Invoice Date"].apply(parse_invoice_date)
+            df_cust_bulk = df_cust_bulk.sort_values("Invoice Date Parsed")
+
+            valid_dates = df_cust_bulk["Invoice Date Parsed"].dropna()
+            if valid_dates.empty:
+                date_range = "All dates"
+            else:
+                date_range = (
+                    f"{valid_dates.iloc[0].strftime('%d-%b-%Y')} "
+                    f"to {valid_dates.iloc[-1].strftime('%d-%b-%Y')}"
+                )
+
+            total_due_bulk = pd.to_numeric(
+                df_cust_bulk["Due Amount"], errors="coerce"
+            ).sum(skipna=True)
+
+            total_received_bulk = pd.to_numeric(
+                df_cust_bulk["Amount Received"], errors="coerce"
+            ).sum(skipna=True)
+
+            rows_bulk = []
+            for _, r in df_cust_bulk.iterrows():
+                received_dt = parse_invoice_date(r["Received Date"])
+
+                rows_bulk.append({
+                    "date": (
+                        r["Invoice Date Parsed"].strftime("%d-%b-%Y")
+                        if pd.notna(r["Invoice Date Parsed"]) else ""
+                    ),
+                    "inv": r["Invoice Number"],
+                    "amt": format_amount(r["Due Amount"]),
+                    "received_amt": format_amount(r["Amount Received"]),
+                    "received_date": (
+                        received_dt.strftime("%d-%b-%Y")
+                        if pd.notna(received_dt) else ""
+                    ),
+                })
+
+            pdf_buffer = generate_pdf(
+                customer=cust,
+                today=today,
+                total_due=total_due_bulk,
+                date_range=date_range,
+                rows=rows_bulk
+            )
+
+            file_name = f"{cust}_{line_safe}_Statement_{today_str}.pdf"
+            zipf.writestr(file_name, pdf_buffer.getvalue())
+
+            progress.progress(idx / total_customers)
+
+    zip_buffer.seek(0)
+
+    st.success(
+        f"ZIP ready. Generated {total_customers - skipped_customers} statements. "
+        f"Skipped {skipped_customers} customers with no invoices."
+    )
+
+    st.download_button(
+        "Download ZIP",
+        data=zip_buffer,
+        file_name=f"{line_safe}_Statements_{today_str}.zip",
+        mime="application/zip"
+    )
+
+
 
 customers = sorted(df["Customer Name"].unique())
 
