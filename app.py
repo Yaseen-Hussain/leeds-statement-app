@@ -304,7 +304,7 @@ line = st.selectbox("Select Line", list(LINES.keys()))
 
 df = load_invoice_data(LINES[line], INVOICE_SHEET_NAME)
 
-ENABLE_BULK_DOWNLOAD = True
+ENABLE_BULK_DOWNLOAD = False
 
 # ================= BULK DOWNLOAD SECTION =================
 if ENABLE_BULK_DOWNLOAD:
