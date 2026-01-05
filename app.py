@@ -214,7 +214,12 @@ INVOICE_SHEET_NAME = "Invoice Wise"
 
 # ---------------------------------------
 
-st.set_page_config(page_title="Customer Statement", layout="centered")
+st.set_page_config(
+    page_title="Customer Statement",
+    layout="centered",
+    page_icon="logo.png"   # 👈 your logo here
+)
+
 
 # -------- PASSWORD GATE (CENTERED + ENTER SUPPORT) --------
 if "authenticated" not in st.session_state:
