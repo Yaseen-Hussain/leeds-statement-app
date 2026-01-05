@@ -105,19 +105,19 @@ def generate_pdf(customer, today, total_due, total_received, date_range, rows):
     story.append(Spacer(1, 0.4*cm))
     story.append(
         Paragraph(
-            f"<b>Total outstanding amount till 31-Dec-2025:</b> AED {total_due:,.2f}",
+            f"<b>Total outstanding amount:</b> AED {total_due:,.2f}",
             styles["Normal"]
         )
     )
     story.append(Spacer(1, 0.8*cm))
-#
-#    story.append(
-#        Paragraph(
-#            f"<b>Date range:</b> {date_range}",
-#            styles["Normal"]
-#        )
-#    )
-#   story.append(Spacer(1, 0.6*cm))
+
+    story.append(
+        Paragraph(
+            f"<b>Date range:</b> {date_range}",
+            styles["Normal"]
+        )
+    )
+    story.append(Spacer(1, 0.6*cm))
 
 
 
