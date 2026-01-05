@@ -304,8 +304,11 @@ line = st.selectbox("Select Line", list(LINES.keys()))
 
 df = load_invoice_data(LINES[line], INVOICE_SHEET_NAME)
 
+ENABLE_BULK_DOWNLOAD = False
+
 # ================= BULK DOWNLOAD SECTION =================
-st.markdown("Bulk Downloads (Line-wise)")
+if ENABLE_BULK_DOWNLOAD:
+    st.markdown("Bulk Downloads (Line-wise)")
 
 confirm_bulk = st.checkbox(
     "I understand this will generate statements for all customers in this line (may take a minute)."
@@ -400,7 +403,7 @@ if download_all_clicked:
 
     st.success(
         f"ZIP ready. Generated {total_customers - skipped_customers} statements. "
-        f"Skipped {skipped_customers} customers with no invoices."
+        f"Skipped {skipped_customers} customers with no dues."
     )
 
     st.download_button(
