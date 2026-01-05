@@ -319,8 +319,8 @@ if ENABLE_BULK_DOWNLOAD:
         disabled=not confirm_bulk
     )
 
-if download_all_clicked:
-    st.info("Generating statements. Please wait...")
+    if download_all_clicked:
+        st.info("Generating statements. Please wait...")
 
     progress = st.progress(0)
 
