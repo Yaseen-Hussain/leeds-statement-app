@@ -310,14 +310,14 @@ ENABLE_BULK_DOWNLOAD = False
 if ENABLE_BULK_DOWNLOAD:
     st.markdown("Bulk Downloads (Line-wise)")
 
-confirm_bulk = st.checkbox(
+    confirm_bulk = st.checkbox(
     "I understand this will generate statements for all customers in this line (may take a minute)."
-)
+    )
 
-download_all_clicked = st.button(
-    "Download all customer statements (ZIP)",
-    disabled=not confirm_bulk
-)
+    download_all_clicked = st.button(
+        "Download all customer statements (ZIP)",
+        disabled=not confirm_bulk
+    )
 
 if download_all_clicked:
     st.info("Generating statements. Please wait...")
