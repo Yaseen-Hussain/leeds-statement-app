@@ -618,6 +618,15 @@ with pd.ExcelWriter(output, engine="openpyxl") as writer:
 
 safe_range = display_date_range.replace(" ", "").replace("-", "")
 
+pdf_buffer = generate_pdf(
+    customer=customer,
+    today=today,
+    total_due=total_due,
+    total_received=total_received,
+    date_range=display_date_range,
+    rows=rows
+)
+
 st.download_button(
     "Download PDF",
     data=pdf_buffer,
