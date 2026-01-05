@@ -305,11 +305,11 @@ line = st.selectbox("Select Line", list(LINES.keys()))
 df = load_invoice_data(LINES[line], INVOICE_SHEET_NAME)
 
 # ================= BULK DOWNLOAD SECTION =================
-with st.expander("⚠️ Bulk Downloads (Admin / Occasional Use)"):
+st.markdown("Bulk Downloads (Line-wise)")
 
-    confirm_bulk = st.checkbox(
+confirm_bulk = st.checkbox(
     "I understand this will generate statements for all customers in this line (may take a minute)."
-    )
+)
 
 download_all_clicked = st.button(
     "Download all customer statements (ZIP)",
