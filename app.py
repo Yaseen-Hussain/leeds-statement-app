@@ -109,15 +109,15 @@ def generate_pdf(customer, today, total_due, total_received, date_range, rows):
             styles["Normal"]
         )
     )
-    story.append(Spacer(1, 0.8*cm))
-
-    story.append(
-        Paragraph(
-            f"<b>Date range:</b> {date_range}",
-            styles["Normal"]
-        )
-    )
-    story.append(Spacer(1, 0.6*cm))
+#    story.append(Spacer(1, 0.8*cm))
+#
+#    story.append(
+#        Paragraph(
+#            f"<b>Date range:</b> {date_range}",
+#            styles["Normal"]
+#        )
+#    )
+#   story.append(Spacer(1, 0.6*cm))
 
 
 
