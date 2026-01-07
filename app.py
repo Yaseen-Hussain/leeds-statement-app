@@ -97,7 +97,7 @@ def generate_pdf(customer, today, total_due, total_received, date_range, rows):
         fontName="Helvetica-Bold"
     )
 
-    story.append(Paragraph("Outstanding Invoice Statement", title_style))
+    story.append(Paragraph("Statement of Account", title_style))
     story.append(Spacer(1, 0.8*cm))
 
     # ---------- META ----------
