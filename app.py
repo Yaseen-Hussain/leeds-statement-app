@@ -57,7 +57,9 @@ from PIL import Image
 from reportlab.platypus import Image
 
 
-def generate_pdf(customer, today, total_due, total_received, date_range, rows):
+def generate_pdf(customer, today, opening_balance,
+                 invoice_total, total_received,
+                 closing_balance, date_range, rows):
     buffer = BytesIO()
 
     doc = SimpleDocTemplate(
@@ -85,6 +87,16 @@ def generate_pdf(customer, today, total_due, total_received, date_range, rows):
 
         story.append(logo)
         story.append(Spacer(1, 0.6*cm))
+    
+    story.append(Paragraph(
+        "<b>Supplier:</b> Leeds Gifts Trading<br/>"
+        "<b>TRN:</b> 100465234100003<br/>"
+        "<b>Email:</b> leedsgiftstrading123@gmail.com | "
+        "<b>Mobile:</b> 0551423298",
+        styles["Normal"]
+    ))
+    story.append(Spacer(1, 0.6*cm))
+
 
 
     # ---------- TITLES ----------
@@ -97,26 +109,13 @@ def generate_pdf(customer, today, total_due, total_received, date_range, rows):
         fontName="Helvetica-Bold"
     )
 
-    story.append(Paragraph("Statement of Account", title_style))
+    story.append(Paragraph("STATEMENT OF ACCOUNT", title_style))
     story.append(Spacer(1, 0.8*cm))
 
     # ---------- META ----------
-    story.append(Paragraph(f"<b>Customer Name:</b> {customer}", styles["Normal"]))
-    story.append(Spacer(1, 0.4*cm))
-    story.append(
-        Paragraph(
-            f"<b>Total outstanding amount:</b> AED {total_due:,.2f}",
-            styles["Normal"]
-        )
-    )
-    story.append(Spacer(1, 0.8*cm))
-
-    story.append(
-        Paragraph(
-            f"<b>Date range:</b> {date_range}",
-            styles["Normal"]
-        )
-    )
+    story.append(Paragraph(f"<b>Customer:</b> {customer}", styles["Normal"]))
+    story.append(Paragraph(f"<b>Statement As Of:</b> {today}", styles["Normal"]))
+    story.append(Paragraph(f"<b>Statement Period:</b> {date_range}", styles["Normal"]))
     story.append(Spacer(1, 0.6*cm))
 
 
@@ -127,9 +126,9 @@ def generate_pdf(customer, today, total_due, total_received, date_range, rows):
         "S. No.",
         "Invoice Date",
         "Invoice No.",
-        "Due Amount",
+        "Invoice Amount",
         "Amount Received",
-        "Received Date"
+        "Due Amount"
         ]
     ]
 
@@ -138,19 +137,18 @@ def generate_pdf(customer, today, total_due, total_received, date_range, rows):
             str(i),
             r["date"],
             r["inv"],
-            r["amt"],
+            r["invoice_amt"],
             r["received_amt"],
-            r["received_date"]
+            r['due_amt']
         ])
     # ---- TOTAL ROW ----
     table_data.append([
-        "Total",
-        "",
-        "",
-        f"{total_due:,.2f}",
+        "Total", "", "",
+        f"{invoice_total:,.2f}",
         f"{total_received:,.2f}",
-        ""
+        f"{closing_balance:,.2f}"
     ])
+
 
 
     table = Table(
@@ -187,13 +185,10 @@ def generate_pdf(customer, today, total_due, total_received, date_range, rows):
     # ---------- FOOTER ----------
     story.append(Spacer(1, 0.8*cm))
     footer = Paragraph(
-        "This is a system-generated statement and does not require a signature.",
-        ParagraphStyle(
-            "Footer",
-            fontSize=8,
-            alignment=1
+        "This is a system-generated Statement of Account and does not require a signature.<br/>"
+        "For discrepancies, contact: leedsgiftstrading123@gmail.com",
+        ParagraphStyle("Footer", fontSize=8, alignment=1)
         )
-    )
     story.append(footer)
 
     doc.build(story)
@@ -320,6 +315,7 @@ st.markdown("<h2 style='text-align:center'>Statement</h2>", unsafe_allow_html=Tr
 line = st.selectbox("Select Line", list(LINES.keys()))
 
 df = load_invoice_data(LINES[line], INVOICE_SHEET_NAME)
+df["Invoice Date Parsed"] = df["Invoice Date"].apply(parse_invoice_date)
 
 ENABLE_BULK_DOWNLOAD = False
 
@@ -393,19 +389,27 @@ if ENABLE_BULK_DOWNLOAD:
                             if pd.notna(r["Invoice Date Parsed"]) else ""
                         ),
                         "inv": r["Invoice Number"],
-                        "amt": format_amount(r["Due Amount"]),
+                        "due_amt": format_amount(r["Due Amount"]),
                         "received_amt": format_amount(r["Amount Received"]),
                         "received_date": (
                             received_dt.strftime("%d-%b-%Y")
                             if pd.notna(received_dt) else ""
                         ),
                     })
+                opening_balance = 0.0
+                invoice_total = pd.to_numeric(
+                    df_cust_bulk["Invoice Amount"], errors="coerce"
+                ).sum(skipna=True)
 
+                closing_balance = invoice_total - total_received_bulk
+    
                 pdf_buffer = generate_pdf(
                     customer=cust,
                     today=today,
-                    total_due=total_due_bulk,
+                    opening_balance=opening_balance,
+                    invoice_total=invoice_total,
                     total_received=total_received_bulk,
+                    closing_balance=closing_balance,
                     date_range=date_range,
                     rows=rows_bulk
                 )
@@ -471,6 +475,19 @@ if period_type == "Date range":
         st.error("Start date cannot be after End date")
         st.stop()
 
+opening_balance = 0.0
+
+if period_type == "Date range":
+    start_dt = pd.to_datetime(start_date_input)
+
+    df_before = df[
+        (df["Customer Name"] == customer) &
+        (df["Invoice Date Parsed"] < start_dt)
+    ]
+
+    opening_balance = pd.to_numeric(
+        df_before["Due Amount"], errors="coerce"
+    ).sum(skipna=True)
 
 
 # ---------------- CUSTOMER FILTER ----------------
@@ -517,13 +534,16 @@ else:
 
 
 # ---------------- TOTALS ----------------
-total_due = pd.to_numeric(
-    df_cust["Due Amount"], errors="coerce"
+invoice_total = pd.to_numeric(
+    df_cust["Invoice Amount"], errors="coerce"
 ).sum(skipna=True)
 
 total_received = pd.to_numeric(
     df_cust["Amount Received"], errors="coerce"
 ).sum(skipna=True)
+
+closing_balance = opening_balance + invoice_total - total_received
+
 
 
 # -------- HTML TEMPLATE --------
@@ -541,7 +561,7 @@ th { background-color: #1f2a5a; color: white; }
 </head>
 <body>
 
-<div class="header">Outstanding Invoice Summary as on {{ date }}</div>
+<div class="header">Statement of Account as on {{ date }}</div>
 <p><b>Customer Name:</b> {{ customer }}</p>
 
 <div class="summary">
@@ -585,18 +605,16 @@ for _, r in df_cust.iterrows():
     parsed_received_date = parse_invoice_date(r["Received Date"])
 
     rows.append({
-        "date": (
-            r["Invoice Date Parsed"].strftime("%d-%b-%Y")
-            if pd.notna(r["Invoice Date Parsed"]) else ""
-        ),
-        "inv": r["Invoice Number"],
-        "amt": format_amount(r["Due Amount"]),
-        "received_amt": format_amount(r["Amount Received"]),
-        "received_date": (
-            parsed_received_date.strftime("%d-%b-%Y")
-            if pd.notna(parsed_received_date) else ""
-        )
-    })
+    "date": (
+        r["Invoice Date Parsed"].strftime("%d-%b-%Y")
+        if pd.notna(r["Invoice Date Parsed"]) else ""
+    ),
+    "inv": r["Invoice Number"],
+    "invoice_amt": format_amount(r["Invoice Amount"]),
+    "received_amt": format_amount(r["Amount Received"]),
+    "due_amt": format_amount(r["Due Amount"]),
+})
+
 
 
 
@@ -604,7 +622,7 @@ for _, r in df_cust.iterrows():
 html = Template(html_template).render(
     customer=customer,
     date=today,
-    total=f"{total_due:,.2f}",
+    total=f"{closing_balance:,.2f}",
     date_range=display_date_range,
     rows=rows
 )
@@ -641,11 +659,15 @@ safe_range = display_date_range.replace(" ", "").replace("-", "")
 pdf_buffer = generate_pdf(
     customer=customer,
     today=today,
-    total_due=total_due,
+    opening_balance=opening_balance,
+    invoice_total=invoice_total,
     total_received=total_received,
+    closing_balance=closing_balance,
     date_range=display_date_range,
     rows=rows
 )
+
+
 
 st.download_button(
     "Download PDF",
