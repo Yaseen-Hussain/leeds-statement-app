@@ -243,7 +243,7 @@ LINES = {
     "Ajman": "1roBccgFgdXzGI3kEz5oRReADW7iKzWi-QboO2_scTKI",
     "Abu Dhabi": "10FTh4V5X8Y14u_6lIKUnaERlOX9b9F0x2xQ1vLXa2tY",
     "Fujairah": "1jD28UaXTLj9pTXrmtl17FfLoWM9qbUVnWudCG7oORQg",
-    "Dubai": "1ZNW5OAeuCuVI9LNBtjlLWbwn6eVSqeT6kU-qzdhH-6I",
+    "Dubai & RAK": "1ZNW5OAeuCuVI9LNBtjlLWbwn6eVSqeT6kU-qzdhH-6I",
     "Sharjah": "1OA265FFNvGLvryTD8AZFpZPmXkpL155ce5BKFkO3LIg"
 }
 
