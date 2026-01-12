@@ -209,7 +209,7 @@ LINES = {
     "Abu Dhabi": "10FTh4V5X8Y14u_6lIKUnaERlOX9b9F0x2xQ1vLXa2tY",
     "Fujairah": "1jD28UaXTLj9pTXrmtl17FfLoWM9qbUVnWudCG7oORQg",
     "Dubai": "1ZNW5OAeuCuVI9LNBtjlLWbwn6eVSqeT6kU-qzdhH-6I",
-    "Sharjah": "1OA265FFNvGLvryTD8AZFpZPmXkpL155ce5BKFkO3LIg",
+    "Sharjah": "1OA265FFNvGLvryTD8AZFpZPmXkpL155ce5BKFkO3LIg"
 }
 
 INVOICE_SHEET_NAME = "Invoice Wise"
@@ -219,7 +219,7 @@ INVOICE_SHEET_NAME = "Invoice Wise"
 st.set_page_config(
     page_title="Customer Statement",
     layout="centered",
-    page_icon="logo.png"   # 👈 your logo here
+    page_icon="logo.png"
 )
 
 
@@ -280,6 +280,16 @@ def load_invoice_data(sheet_id, worksheet_name):
     rows = values[2:]
 
     df = pd.DataFrame(rows, columns=headers)
+
+    # ---- Invoice Amount ----
+    df["Invoice Amount"] = (
+        df["Invoice Amount"]
+        .astype(str)
+        .str.replace(",", "", regex=False)
+        .str.strip()
+    )
+    df["Invoice Amount"] = pd.to_numeric(df["Invoice Amount"], errors="coerce")
+
 
     # ---- Due Amount ----
     df["Due Amount"] = (
