@@ -115,7 +115,7 @@ def generate_pdf(customer, today, opening_balance,
     title_style = ParagraphStyle(
         "Title",
         parent=styles["Normal"],
-        fontSize=14,
+        fontSize=12,
         leading=18,
         alignment=1,
         fontName="Helvetica-Bold"
