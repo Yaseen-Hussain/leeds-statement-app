@@ -89,7 +89,7 @@ def generate_pdf(customer, today, opening_balance,
         story.append(Spacer(1, 0.6*cm))
     
     story.append(Paragraph(
-        "<b>Leeds Gifts Trading<b/>"
+        "<b>Supplier:<b/> Leeds Gifts Trading<br/>"
         "<b>TRN:</b> 100465234100003<br/>"
         "<b>Email:</b> leedsgiftstrading123@gmail.com | "
         "<b>Mobile:</b> 0551423298",
