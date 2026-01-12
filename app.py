@@ -203,7 +203,7 @@ def generate_pdf(customer, today, opening_balance,
     ("ALIGN", (0, 0), (-1, 0), "CENTER"),
 
     # 👉 Right-align Amount columns (5 & 6)
-    ("ALIGN", (3, 1), (4, -1), "RIGHT"),
+    ("ALIGN", (3, 1), (5, -1), "RIGHT"),
 
     ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
     ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
