@@ -132,6 +132,32 @@ def generate_pdf(customer, today, opening_balance,
     story.append(Paragraph(f"<b>Statement Period:</b> {date_range}", styles["Normal"]))
     story.append(Spacer(1, 0.6*cm))
 
+    # ---------- SUMMARY BLOCK ----------
+    summary_data = [
+        ["Opening Balance", f"AED {opening_balance:,.2f}"],
+        ["Invoices During Period", f"AED {invoice_total:,.2f}"],
+        ["Payments Received", f"AED {total_received:,.2f}"],
+        ["Closing Balance Outstanding", f"AED {closing_balance:,.2f}"],
+    ]
+
+    summary_table = Table(
+        summary_data,
+        colWidths=[9*cm, 5*cm]
+    )
+
+    summary_table.setStyle(TableStyle([
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+        ("FONTNAME", (0, 0), (-1, -1), "Helvetica-Bold"),
+        ("ALIGN", (1, 0), (1, -1), "RIGHT"),
+        ("BACKGROUND", (0, -1), (-1, -1), colors.HexColor("#e6e6e6")),
+    ]))
+
+    story.append(summary_table)
+    story.append(Spacer(1, 0.8*cm))
+
+
+
+
 
 
     # ---------- TABLE DATA ----------
