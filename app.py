@@ -87,7 +87,16 @@ def generate_pdf(customer, today, opening_balance,
 
         story.append(logo)
         story.append(Spacer(1, 0.6*cm))
-    
+
+    company_style = ParagraphStyle(
+        "CompanyName",
+        parent=styles["Normal"],
+        fontSize=16,
+        leading=20,
+        alignment=1,        # Centered
+        fontName="Helvetica-Bold"
+    ) 
+
     story.append(Paragraph("Leeds Gifts Trading", company_style))
     story.append(Spacer(1, 0.2*cm))
 
@@ -112,14 +121,6 @@ def generate_pdf(customer, today, opening_balance,
         fontName="Helvetica-Bold"
     )
 
-    company_style = ParagraphStyle(
-        "CompanyName",
-        parent=styles["Normal"],
-        fontSize=16,
-        leading=20,
-        alignment=1,        # Centered
-        fontName="Helvetica-Bold"
-    )
 
 
     story.append(Paragraph("STATEMENT OF ACCOUNT", title_style))
