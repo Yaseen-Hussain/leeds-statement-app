@@ -622,7 +622,7 @@ Total outstanding amount: AED {{ total }}
   <td>{{ loop.index }}</td>
   <td>{{ row.date }}</td>
   <td>{{ row.inv }}</td>
-  <td style="text-align:right;">{{ row.amt }}</td>
+  <td style="text-align:right;">{{ row.due_amt }}</td>
 </tr>
 {% endfor %}
 
