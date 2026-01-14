@@ -86,7 +86,7 @@ def generate_pdf(customer, today, opening_balance,
         logo.hAlign = "CENTER"
 
         story.append(logo)
-        story.append(Spacer(1, 0.6*cm))
+        story.append(Spacer(1, 0.3*cm))
 
     company_style = ParagraphStyle(
         "CompanyName",
