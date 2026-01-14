@@ -128,8 +128,8 @@ def generate_pdf(customer, today, opening_balance,
 
     # ---------- META ----------
     story.append(Paragraph(f"<b>Customer:</b> {customer}", styles["Normal"]))
-    story.append(Paragraph(f"<b>Statement As Of:</b> {today}", styles["Normal"]))
-    story.append(Paragraph(f"<b>Statement Period:</b> {date_range}", styles["Normal"]))
+    story.append(Paragraph(f"<b>Statement as of:</b> {today}", styles["Normal"]))
+    story.append(Paragraph(f"<b>Statement period:</b> {date_range}", styles["Normal"]))
     story.append(Spacer(1, 0.6*cm))
 
     # ---------- SUMMARY BLOCK ----------
