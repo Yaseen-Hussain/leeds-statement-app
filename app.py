@@ -94,7 +94,7 @@ def generate_pdf(customer, today, opening_balance,
         fontSize=16,
         leading=20,
         alignment=1,        # Centered
-        fontName="Cinzel-Bold"
+        fontName="Times-Bold"
     ) 
 
     story.append(Paragraph("Leeds Gifts Trading", company_style))
