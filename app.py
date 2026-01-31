@@ -429,12 +429,9 @@ if ENABLE_BULK_DOWNLOAD:
                             if pd.notna(r["Invoice Date Parsed"]) else ""
                         ),
                         "inv": r["Invoice Number"],
-                        "due_amt": format_amount(r["Due Amount"]),
+                        "invoice_amt": format_amount(r["Invoice Amount"]),
                         "received_amt": format_amount(r["Amount Received"]),
-                        "received_date": (
-                            received_dt.strftime("%d-%b-%Y")
-                            if pd.notna(received_dt) else ""
-                        ),
+                        "due_amt": format_amount(r["Due Amount"]),
                     })
                 opening_balance = 0.0
                 invoice_total = pd.to_numeric(
