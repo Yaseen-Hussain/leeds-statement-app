@@ -398,6 +398,7 @@ if ENABLE_BULK_DOWNLOAD:
 
                 df_cust_bulk["Invoice Date Parsed"] = df_cust_bulk["Invoice Date"].apply(parse_invoice_date)
                 df_cust_bulk = df_cust_bulk.sort_values("Invoice Date Parsed")
+                df_cust_bulk = df_cust_bulk[pd.to_numeric(df_cust_bulk["Due Amount"], errors="coerce") >= 1]
 
                 valid_dates = df_cust_bulk["Invoice Date Parsed"].dropna()
                 if valid_dates.empty:
