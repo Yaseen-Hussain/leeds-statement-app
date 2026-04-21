@@ -246,7 +246,9 @@ LINES = {
     "Fujairah": "1jD28UaXTLj9pTXrmtl17FfLoWM9qbUVnWudCG7oORQg",
     "Dubai & RAK": "1ZNW5OAeuCuVI9LNBtjlLWbwn6eVSqeT6kU-qzdhH-6I",
     "Sharjah": "1OA265FFNvGLvryTD8AZFpZPmXkpL155ce5BKFkO3LIg",
-    "Saudi Border":"1-U8w2EuvfR0kgCGGorAVgBL4HBIIz1ILyELF0rBb4k4"
+    "Saudi Border":"1-U8w2EuvfR0kgCGGorAVgBL4HBIIz1ILyELF0rBb4k4",
+    "Khor Fakkan":"1LkKd_fPxtT1sXlG8hJxAxxhGt8G7nPwtyfHGHjocJAw"
+
 }
 
 INVOICE_SHEET_NAME = "Invoice Wise"
